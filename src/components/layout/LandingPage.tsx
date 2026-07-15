@@ -185,7 +185,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 }, scale: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 } }}
               className="mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
-              style={{ width: '1917px', maxWidth: 'calc(100vw - 32px)' }}
+              style={{ width: '960px', maxWidth: 'calc(100vw - 32px)' }}
               onClick={onEnter}
             >
               {/* Top Window Header */}
