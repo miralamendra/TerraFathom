@@ -5,6 +5,8 @@ import { TerraFathomLogo } from '../ui/TerraFathomLogo';
 import { Dither } from '../ui/Dither';
 
 const imageSlides = ['Geo1.png', 'Geo2.png', 'Geo3.png'];
+const SLIDE_INTERVAL_MS = 5200;
+const SLIDE_FADE_MS = 1100;
 
 interface LandingPageProps {
   onEnter: () => void;
@@ -12,11 +14,9 @@ interface LandingPageProps {
 
 export function LandingPage({ onEnter }: LandingPageProps) {
   const baseImagePath = `${import.meta.env.BASE_URL}Images/`;
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [nextImageIndex, setNextImageIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimeoutRef = useRef<number | null>(null);
-  const currentImageIndexRef = useRef(0);
 
   useEffect(() => {
     const images = imageSlides.map((slide) => {
@@ -35,40 +35,43 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     );
 
     void Promise.all(preloadImages);
-  }, [baseImagePath, imageSlides]);
+  }, [baseImagePath]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      const nextIndex = (currentImageIndexRef.current + 1) % imageSlides.length;
-      setNextImageIndex(nextIndex);
-      setIsTransitioning(true);
+    let cancelled = false;
 
+    const advance = () => {
+      if (cancelled) return;
+      setIsTransitioning(true);
       if (transitionTimeoutRef.current) {
         window.clearTimeout(transitionTimeoutRef.current);
       }
-
       transitionTimeoutRef.current = window.setTimeout(() => {
-        setCurrentImageIndex(nextIndex);
-        currentImageIndexRef.current = nextIndex;
+        if (cancelled) return;
+        setCurrentIndex((prev) => (prev + 1) % imageSlides.length);
         setIsTransitioning(false);
-      }, 450);
-    }, 5000);
+      }, SLIDE_FADE_MS);
+    };
+
+    const timer = window.setInterval(advance, SLIDE_INTERVAL_MS);
 
     return () => {
+      cancelled = true;
       window.clearInterval(timer);
       if (transitionTimeoutRef.current) {
         window.clearTimeout(transitionTimeoutRef.current);
       }
     };
-  }, [imageSlides.length]);
+  }, []);
 
-  const currentImage = `${baseImagePath}${imageSlides[currentImageIndex]}`;
-  const nextImage = `${baseImagePath}${imageSlides[nextImageIndex]}`;
+  const currentImage = `${baseImagePath}${imageSlides[currentIndex]}`;
+  const nextIndex = (currentIndex + 1) % imageSlides.length;
+  const nextImage = `${baseImagePath}${imageSlides[nextIndex]}`;
 
   const viewportLabel =
-    imageSlides[currentImageIndex] === 'Geo1.png'
+    imageSlides[currentIndex] === 'Geo1.png'
       ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP'
-      : imageSlides[currentImageIndex] === 'Geo2.png'
+      : imageSlides[currentIndex] === 'Geo2.png'
         ? 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'
         : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
@@ -195,38 +198,43 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   {viewportLabel}
                 </span>
                 <div className="flex items-center gap-1">
-                  {imageSlides.map((image) => (
+                  {imageSlides.map((image, i) => (
                     <div
                       key={image}
-                      className={`w-1 h-1 rounded-full transition-all duration-300 ${imageSlides[currentImageIndex] === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${currentIndex === i ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
                     />
                   ))}
                 </div>
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
-              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center w-[min(100%,920px)] max-w-full mx-auto aspect-[16/10]">
+              <div
+                className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center w-full max-w-[1080px] mx-auto"
+                style={{ aspectRatio: '1917 / 912' }}
+              >
                 <motion.img
+                  key={`current-${currentIndex}`}
                   src={currentImage}
                   alt="TerraFathom Workspace Viewport"
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
                   initial={false}
-                  animate={{ opacity: isTransitioning ? 0 : 1, scale: isTransitioning ? 0.985 : 1 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
+                  animate={{ opacity: isTransitioning ? 0 : 1, scale: isTransitioning ? 1.012 : 1 }}
+                  transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none will-change-[opacity,transform]"
                 />
                 <motion.img
+                  key={`next-${currentIndex}`}
                   src={nextImage}
                   alt="TerraFathom Workspace Viewport"
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
                   initial={false}
-                  animate={{ opacity: isTransitioning ? 1 : 0, scale: isTransitioning ? 1 : 0.985 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
+                  animate={{ opacity: isTransitioning ? 1 : 0, scale: isTransitioning ? 1 : 1.012 }}
+                  transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none will-change-[opacity,transform]"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
