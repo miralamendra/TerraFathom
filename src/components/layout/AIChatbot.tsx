@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, Key, Trash2, Loader2, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { Key, Trash2, Loader2, Send, ChevronUp, ChevronRight } from 'lucide-react';
 import { useUIStore } from '@/stores/ui-store';
 import { useDataStore } from '@/stores/data-store';
 import { useMapStore } from '@/stores/map-store';
-import { Input, Button } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { toast } from 'sonner';
 
 export function AIChatbot() {
@@ -139,32 +139,33 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
   };
 
   return (
-    <div className="flex flex-col gap-2.5 mt-2 px-2 select-none font-sans text-xs">
+    <div className="flex flex-col gap-2 mt-2 px-1 select-none font-sans text-xs">
       
       {/* Section Header */}
       <div 
         onClick={toggleChat}
-        className="flex items-center justify-between h-6 border-b border-border-primary/20 pb-1 cursor-pointer hover:border-border-primary/50 transition-colors"
+        className="flex items-center justify-between h-6 cursor-pointer"
       >
         <div className="flex items-center gap-1.5">
-          <Bot size={13} className="text-[#C8A46A]" strokeWidth={1.5} />
+          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary" /> : <ChevronRight size={12} className="text-text-tertiary" />}
           <span className="text-[13px] font-semibold text-text-primary tracking-tight">
-            AI Assistant
+            TerraFathom AI
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowConfig(!showConfig);
-            }}
-            title="Configure settings"
-            className="w-5 h-5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
-          >
-            <Key size={11} strokeWidth={1.5} />
-          </button>
-          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary animate-fade-in" /> : <ChevronDown size={12} className="text-text-tertiary animate-fade-in" />}
+          {isChatOpen && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowConfig(!showConfig);
+              }}
+              title="Configure settings"
+              className="w-5 h-5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+            >
+              <Key size={11} strokeWidth={1.5} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,15 +270,13 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
               placeholder="Query workspace..."
               className="flex-1 h-8 text-xs bg-bg-tertiary"
             />
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="sm"
               disabled={isChatLoading || !inputMsg.trim()}
-              className="w-8 h-8 rounded-control shrink-0 active:scale-95 transition-all p-0 flex items-center justify-center"
+              className="w-8 h-8 flex items-center justify-center rounded-control border border-border-primary hover:border-[#C8A46A]/50 bg-bg-tertiary/20 text-[#C8A46A] hover:bg-[#C8A46A]/5 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
             >
               <Send size={11} />
-            </Button>
+            </button>
           </form>
         </div>
       )}
