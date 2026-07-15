@@ -18,6 +18,7 @@ import { type LayerInstance, type LayerType } from '@/core/layers/base-layer';
 import { LAYER_DEFINITIONS } from '@/core/layers/layer-registry';
 import { useLayerStore } from '@/stores/layer-store';
 import { useDataStore } from '@/stores/data-store';
+import { useUIStore } from '@/stores/ui-store';
 import { ColorPaletteStrip } from '@/components/ui/ColorPaletteStrip';
 import { getPalette } from '@/core/colors/palettes';
 import { toast } from 'sonner';
@@ -49,7 +50,7 @@ export function DatasetSection({ dataset, layers, defaultExpanded = true }: Data
   const addLayer = useLayerStore((s) => s.addLayer);
   const removeDataset = useDataStore((s) => s.removeDataset);
   const selectDataset = useDataStore((s) => s.selectDataset);
-  const selectedDatasetId = useDataStore((s) => s.selectedDatasetId);
+  const selectedDatasetId = useUIStore((s) => s.selectedDatasetId);
 
   const isDatasetSelected = selectedDatasetId === dataset.id;
 

@@ -67,7 +67,7 @@ export function LeftPanel() {
 
   return (
     <aside
-      className="h-full flex flex-col bg-bg-secondary border-r border-border-primary select-none shrink-0 relative transition-all duration-500"
+      className="h-full flex flex-col bg-bg-secondary select-none shrink-0 relative transition-all duration-500"
       style={{ width }}
       onDragOver={fileDrop.handleDragOver}
       onDragLeave={fileDrop.handleDragLeave}

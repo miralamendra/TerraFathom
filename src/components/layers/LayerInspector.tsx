@@ -20,7 +20,7 @@ export function LayerInspector() {
 
   return (
     <aside
-      className="h-full flex flex-col bg-bg-secondary border-l border-border-primary select-none shrink-0 relative"
+      className="h-full flex flex-col bg-bg-secondary select-none shrink-0 relative"
       style={{ width: rightWidth }}
     >
       <LayerEditor layer={layer} dataset={dataset} />
