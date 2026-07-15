@@ -343,7 +343,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             <Globe size={13} className="text-[#C8A46A]/40" />
             <span>TERRAFATHOM v1.0</span>
           </div>
-          <span>&copy; 2026 DEEP SPATIAL INTELLIGENCE RESEARCH. ALL RIGHTS RESERVED.</span>
+          <span>&copy; 2026 TerraFathom. All rights reserved.</span>
         </div>
       </footer>
 
