@@ -113,7 +113,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               {...fadeUpProps}
               className="flex flex-col items-center text-center gap-6 max-w-[850px]"
             >
-              <span className="text-[13px] md:text-[14px] font-sans font-semibold tracking-[0.12em] text-[#C8A46A] uppercase">
+              <span className="text-[13px] md:text-[14px] font-sans font-bold text-[#C8A46A] normal-case">
                 TerraFathom Workspace
               </span>
 
