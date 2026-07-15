@@ -7,6 +7,7 @@ import { BottomDrawer } from './BottomDrawer';
 import { PanelResizer } from './PanelResizer';
 import { MapContainer } from '@/components/map/MapContainer';
 import { MapControls } from '@/components/map/MapControls';
+import { MapSearch } from '@/components/map/MapSearch';
 import { MapLegend } from '@/components/map/MapLegend';
 import { MapTooltip } from '@/components/map/MapTooltip';
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
@@ -42,6 +43,7 @@ export function AppShell({ onBackToLanding }: AppShellProps) {
           <main className="absolute inset-0 bg-bg-primary overflow-hidden">
             <MapContainer />
             <MapControls />
+            <MapSearch />
             <MapLegend />
             <MapTooltip />
           </main>
