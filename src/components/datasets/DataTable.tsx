@@ -141,7 +141,7 @@ export function DataTable() {
       {/* Grid Container */}
       <div className="flex-1 overflow-auto min-h-0 scrollbar-thin">
         <table className="w-full border-collapse text-left table-fixed">
-          <thead className="sticky top-0 bg-bg-tertiary border-b border-border-primary z-10">
+          <thead className="sticky top-0 bg-bg-tertiary z-10">
             <tr className="h-8">
               {headers.map((header: string, idx: number) => {
                 const numeric = isNumeric(header);
@@ -151,7 +151,7 @@ export function DataTable() {
                     key={header}
                     onClick={() => handleHeaderClick(header)}
                     className={cn(
-                      "px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-tertiary select-none cursor-pointer bg-bg-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors",
+                      "px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-tertiary select-none cursor-pointer bg-bg-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors border-b border-border-primary",
                       numeric ? "text-right" : "text-left",
                       isFirst ? "sticky left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.05)]" : ""
                     )}
@@ -170,7 +170,7 @@ export function DataTable() {
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-secondary">
+          <tbody>
             {slicedRecords.map((record, rowIndex) => {
               const recordId = record.__id as number;
               const isSelected = selectedRowIndex === recordId;
@@ -228,7 +228,7 @@ export function DataTable() {
                       <td
                         key={header}
                         className={cn(
-                          "px-3 truncate text-text-primary font-normal text-xs",
+                          "px-3 truncate text-text-primary font-normal text-xs border-b border-border-primary",
                           numeric ? "text-right font-mono tabular-nums" : "text-left font-sans",
                           isFirst ? "sticky left-0 bg-inherit z-0" : "",
                           rawVal === null || rawVal === undefined ? "text-text-tertiary" : ""
