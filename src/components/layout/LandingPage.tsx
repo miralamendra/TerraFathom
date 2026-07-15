@@ -1,31 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Globe, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TerraFathomLogo } from '../ui/TerraFathomLogo';
 import { Dither } from '../ui/Dither';
+
+const imageSlides = ['Geo1.png', 'Geo2.png', 'Geo3.png'];
 
 interface LandingPageProps {
   onEnter: () => void;
 }
 
 export function LandingPage({ onEnter }: LandingPageProps) {
-  const imageSlides = ['Geo1.png', 'Geo2.png', 'Geo3.png'];
   const baseImagePath = `${import.meta.env.BASE_URL}Images/`;
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [nextImageIndex, setNextImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const transitionTimeoutRef = useRef<number | null>(null);
+  const currentImageIndexRef = useRef(0);
+
+  useEffect(() => {
+    const images = imageSlides.map((slide) => {
+      const img = new Image();
+      img.src = `${baseImagePath}${slide}`;
+      img.decoding = 'async';
+      return img;
+    });
+
+    const preloadImages = images.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        })
+    );
+
+    void Promise.all(preloadImages);
+  }, [baseImagePath, imageSlides]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveImageIndex((prev) => (prev + 1) % imageSlides.length);
+      const nextIndex = (currentImageIndexRef.current + 1) % imageSlides.length;
+      setNextImageIndex(nextIndex);
+      setIsTransitioning(true);
+
+      if (transitionTimeoutRef.current) {
+        window.clearTimeout(transitionTimeoutRef.current);
+      }
+
+      transitionTimeoutRef.current = window.setTimeout(() => {
+        setCurrentImageIndex(nextIndex);
+        currentImageIndexRef.current = nextIndex;
+        setNextImageIndex(nextIndex);
+        setIsTransitioning(false);
+      }, 220);
     }, 5000);
-    return () => window.clearInterval(timer);
+
+    return () => {
+      window.clearInterval(timer);
+      if (transitionTimeoutRef.current) {
+        window.clearTimeout(transitionTimeoutRef.current);
+      }
+    };
   }, [imageSlides.length]);
 
-  const activeImage = `${baseImagePath}${imageSlides[activeImageIndex]}`;
+  const currentImage = `${baseImagePath}${imageSlides[currentImageIndex]}`;
+  const nextImage = `${baseImagePath}${imageSlides[nextImageIndex]}`;
 
   const viewportLabel =
-    imageSlides[activeImageIndex] === 'Geo1.png'
+    imageSlides[currentImageIndex] === 'Geo1.png'
       ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP'
-      : imageSlides[activeImageIndex] === 'Geo2.png'
+      : imageSlides[currentImageIndex] === 'Geo2.png'
         ? 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'
         : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
@@ -163,19 +207,35 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   {imageSlides.map((image) => (
                     <div
                       key={image}
-                      className={`w-1 h-1 rounded-full transition-all duration-300 ${imageSlides[activeImageIndex] === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${imageSlides[currentImageIndex] === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
                     />
                   ))}
                 </div>
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
-              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
-                <img
-                  key={activeImage}
-                  src={activeImage}
+              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center aspect-[16/10]">
+                <motion.img
+                  src={currentImage}
                   alt="TerraFathom Workspace Viewport"
-                  className="w-full h-auto object-cover select-none"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  initial={false}
+                  animate={{ opacity: isTransitioning ? 0 : 1 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
+                />
+                <motion.img
+                  src={nextImage}
+                  alt="TerraFathom Workspace Viewport"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  initial={false}
+                  animate={{ opacity: isTransitioning ? 1 : 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
