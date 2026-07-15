@@ -38,9 +38,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
   const fadeUpProps = {
-    initial: { opacity: 0, y: 14 },
+    initial: { opacity: 0, y: 6 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
+    transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] as const }
   };
 
   const capabilities = [
@@ -64,17 +64,17 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     <div className="min-h-screen bg-[#111111] text-[#9E9A94] font-sans select-none overflow-x-hidden flex flex-col justify-between selection:bg-[#C8A46A]/20 selection:text-[#ECE8E1] relative" style={gridStyle}>
       
       {/* Background Interactive Dither Wave */}
-      <div className="absolute inset-0 z-0 opacity-[0.18] pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 z-0 opacity-[0.1] pointer-events-none overflow-hidden">
         <Dither
           waveColor={[0.78, 0.64, 0.42]}
           disableAnimation={false}
           enableMouseInteraction={false}
           mouseRadius={0.35}
-          colorNum={4}
-          waveAmplitude={0.2}
-          waveFrequency={2.0}
-          waveSpeed={0.03}
-          pixelSize={3}
+          colorNum={3}
+          waveAmplitude={0.16}
+          waveFrequency={1.7}
+          waveSpeed={0.02}
+          pixelSize={4}
         />
       </div>
 
@@ -124,7 +124,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
             <motion.div 
               {...fadeUpProps}
-              transition={{ ...fadeUpProps.transition, delay: 0.04 }}
+              transition={{ ...fadeUpProps.transition, delay: 0.01 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 z-10 w-full"
             >
               <button
@@ -143,16 +143,16 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
             {/* Suspended Instrument Plate (Large Format Slideshow) */}
             <motion.div 
-              initial={{ opacity: 0, y: 24, scale: 0.995 }}
+              initial={{ opacity: 0, y: 8, scale: 0.998 }}
               animate={{ 
                 opacity: 1, 
-                y: [0, -4, 0],
+                y: [0, -2, 0],
                 scale: 1
               }}
               transition={{ 
-                opacity: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
-                scale: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
-                y: { repeat: Infinity, duration: 10, ease: "easeInOut" }
+                opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 },
+                scale: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 },
+                y: { repeat: Infinity, duration: 12, ease: "easeInOut" }
               }}
               className="w-full max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
               onClick={onEnter}
@@ -186,7 +186,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   onLoad={() => setImageLoaded(true)}
                   initial={{ opacity: 0, scale: 1.01 }}
                   animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.01 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full h-auto object-cover select-none"
                 />
                 
