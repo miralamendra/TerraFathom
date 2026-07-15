@@ -181,7 +181,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               initial={{ opacity: 0, y: 8, scale: 0.998 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 }, scale: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 } }}
-              className="w-full max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
+              className="w-fit max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
               onClick={onEnter}
             >
               {/* Top Window Header */}
@@ -205,7 +205,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
-              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center w-full max-w-[960px] mx-auto aspect-[16/10]">
+              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center w-[min(100%,920px)] max-w-full mx-auto aspect-[16/10]">
                 <motion.img
                   src={currentImage}
                   alt="TerraFathom Workspace Viewport"
