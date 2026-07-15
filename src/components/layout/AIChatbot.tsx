@@ -217,6 +217,21 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
       {isChatOpen && (
         <div className="flex-1 min-h-0 flex flex-col gap-2.5 animate-fade-in px-2">
           
+          {/* Model Selector Bar */}
+          <div className="flex items-center justify-between pb-1 px-1 border-b border-border-primary/10 select-none">
+            <span className="text-[9px] text-text-tertiary font-bold uppercase tracking-wider">Model</span>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="bg-transparent border-0 text-[10px] font-semibold text-[#C8A46A] outline-none cursor-pointer hover:text-[#C8A46A]/80 transition-colors"
+            >
+              <option value="gemini-2.5-flash" className="bg-[#171717] text-text-primary">Gemma 4 31B</option>
+              <option value="gemini-2.5-pro" className="bg-[#171717] text-text-primary">Gemini 2.5 Pro</option>
+              <option value="gemini-1.5-flash" className="bg-[#171717] text-text-primary">Gemini 1.5 Flash</option>
+              <option value="gemma-2-27b-it" className="bg-[#171717] text-text-primary">Gemma 2 27B</option>
+            </select>
+          </div>
+          
           {/* Scroll Area containing log output */}
           <div className="flex-1 min-h-0 overflow-y-auto p-3 border border-border-primary bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">
             {/* Initial welcome message */}
