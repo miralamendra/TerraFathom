@@ -21,7 +21,7 @@ export function TerraFathomLogo({ className = '', size = 18, animateHover = true
     hover: { y: 2.5 }
   };
 
-  const transition = { duration: 0.35, ease: [0.16, 1, 0.3, 1] };
+  const transition = { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const };
 
   return (
     <motion.span 

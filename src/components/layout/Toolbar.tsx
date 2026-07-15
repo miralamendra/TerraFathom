@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Globe, PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon } from 'lucide-react';
+import { PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon } from 'lucide-react';
 import { Button, IconButton, Select } from '@/components/ui';
 import { useUIStore } from '@/stores/ui-store';
 import { useMapStore } from '@/stores/map-store';
