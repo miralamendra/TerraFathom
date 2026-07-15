@@ -9,7 +9,7 @@ import { SAMPLE_DATASETS } from '@/core/data/sample-data';
 import { processDataset } from '@/core/data/processors/data-processor';
 import { DATASET_COLORS } from '@/core/colors/constants';
 import { toast } from 'sonner';
-import { Database, Plus, UploadCloud } from 'lucide-react';
+import { Database, Plus, UploadCloud, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { useRef, useState, useEffect } from 'react';
 import { AIChatbot } from './AIChatbot';
@@ -28,6 +28,11 @@ export function LeftPanel() {
 
   const [samplesOpen, setSamplesOpen] = useState(false);
   const samplesRef = useRef<HTMLDivElement>(null);
+
+  // Section collapsible states
+  const [datasetsExpanded, setDatasetsExpanded] = useState(true);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [samplesExpanded, setSamplesExpanded] = useState(true);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -101,17 +106,23 @@ export function LeftPanel() {
         </button>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="px-3 pb-6 flex flex-col gap-6 mt-2">
+      {/* Scrollable sections */}
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="px-3 pb-6 flex flex-col gap-5 mt-2">
           
           {/* Datasets list (with nested layers) */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <SectionHeader 
               title="Datasets" 
+              expanded={datasetsExpanded}
+              onToggle={() => setDatasetsExpanded(!datasetsExpanded)}
               action={
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
                   className="w-4.5 h-4.5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
                   title="Import Dataset"
                 >
@@ -120,92 +131,124 @@ export function LeftPanel() {
               }
             />
             
-            {datasetList.length === 0 ? (
-              <div className="mx-2 mt-2 py-10 flex flex-col items-center text-center bg-gradient-to-b from-bg-tertiary/10 to-transparent rounded-2xl border border-border-primary/20 shadow-inner transition-all duration-500 hover:border-border-primary/40 group">
-                <div className="w-12 h-12 rounded-full bg-bg-tertiary/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-500 border border-border-primary/20 relative">
-                  <div className="absolute inset-0 rounded-full bg-accent/5 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <Database size={18} className="text-text-tertiary opacity-70 group-hover:text-text-secondary transition-colors" strokeWidth={1.5} />
+            {datasetsExpanded && (
+              datasetList.length === 0 ? (
+                <div className="mx-2 mt-1 py-8 flex flex-col items-center text-center bg-gradient-to-b from-bg-tertiary/10 to-transparent rounded-2xl border border-border-primary/20 shadow-inner transition-all duration-500 hover:border-border-primary/40 group">
+                  <div className="w-10 h-10 rounded-full bg-bg-tertiary/20 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-500 border border-border-primary/20 relative">
+                    <div className="absolute inset-0 rounded-full bg-accent/5 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <Database size={16} className="text-text-tertiary opacity-70 group-hover:text-text-secondary transition-colors" strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[12px] font-medium text-text-primary tracking-tight">No data loaded</span>
+                  <span className="text-[10px] text-text-tertiary max-w-[150px] mt-1.5 leading-relaxed opacity-70">
+                    Drag & drop files or click + to begin
+                  </span>
                 </div>
-                <span className="text-[13px] font-medium text-text-primary tracking-tight">No data loaded</span>
-                <span className="text-[11px] text-text-tertiary max-w-[160px] mt-2 leading-relaxed opacity-70">
-                  Drag & drop files or click the + button to begin
-                </span>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-0.5">
-                {datasetList.map((dataset) => (
-                  <DatasetSection
-                    key={dataset.id}
-                    dataset={dataset}
-                    layers={layers.filter((l) => l.datasetId === dataset.id)}
-                  />
-                ))}
-              </div>
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  {datasetList.map((dataset) => (
+                    <DatasetSection
+                      key={dataset.id}
+                      dataset={dataset}
+                      layers={layers.filter((l) => l.datasetId === dataset.id)}
+                    />
+                  ))}
+                </div>
+              )
             )}
           </div>
 
           {/* Filters section */}
           {datasetList.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <SectionHeader title="Active Filters" />
-              <FilterSection />
+            <div className="flex flex-col gap-1.5">
+              <SectionHeader 
+                title="Active Filters" 
+                expanded={filtersExpanded}
+                onToggle={() => setFiltersExpanded(!filtersExpanded)}
+              />
+              {filtersExpanded && <FilterSection />}
             </div>
           )}
 
           {/* Samples */}
-          <div className="flex flex-col gap-2">
-            <SectionHeader title="Sample data" />
-            <div className="grid grid-cols-3 gap-1.5 px-2">
-              {SAMPLE_DATASETS.map((sample, idx) => {
-                const isLoaded = datasetList.some((d) => d.name === sample.name);
-                const displayName = 
-                  sample.name === 'Pittsburgh Transit' 
-                    ? 'Transit' 
-                    : sample.name === 'NYC Taxi Trips' 
-                      ? 'NYC Taxi' 
-                      : sample.name;
-                return (
-                  <button
-                    key={sample.id}
-                    type="button"
-                    disabled={isLoaded}
-                    onClick={() => handleLoadSample(sample.id, idx)}
-                    className={cn(
-                      'relative flex flex-col items-center justify-center py-2.5 px-1.5 rounded-lg border text-center transition-all duration-300 cursor-pointer select-none group',
-                      isLoaded
-                        ? 'opacity-30 bg-bg-tertiary/5 border-transparent text-text-tertiary pointer-events-none'
-                        : 'bg-bg-tertiary/5 text-text-secondary hover:bg-bg-tertiary/15 hover:text-text-primary active:scale-95 animate-pulse-glow'
-                    )}
-                  >
-                    <span className="text-[10px] font-semibold tracking-tight truncate w-full px-0.5">{displayName}</span>
-                    <span className="text-[8px] text-text-tertiary mt-0.5 uppercase tracking-wider">{sample.format}</span>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <SectionHeader 
+              title="Sample data" 
+              expanded={samplesExpanded}
+              onToggle={() => setSamplesExpanded(!samplesExpanded)}
+            />
+            
+            {samplesExpanded && (
+              <div className="grid grid-cols-3 gap-1.5 px-2">
+                {SAMPLE_DATASETS.map((sample, idx) => {
+                  const isLoaded = datasetList.some((d) => d.name === sample.name);
+                  const displayName = 
+                    sample.name === 'Pittsburgh Transit' 
+                      ? 'Transit' 
+                      : sample.name === 'NYC Taxi Trips' 
+                        ? 'NYC Taxi' 
+                        : sample.name;
+                  return (
+                    <button
+                      key={sample.id}
+                      type="button"
+                      disabled={isLoaded}
+                      onClick={() => handleLoadSample(sample.id, idx)}
+                      className={cn(
+                        'relative flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-center transition-all duration-300 cursor-pointer select-none group',
+                        isLoaded
+                          ? 'opacity-30 bg-bg-tertiary/5 border-transparent text-text-tertiary pointer-events-none'
+                          : 'bg-bg-tertiary/5 text-text-secondary hover:bg-bg-tertiary/15 hover:text-text-primary active:scale-95 animate-pulse-glow'
+                      )}
+                    >
+                      <span className="text-[10px] font-semibold tracking-tight truncate w-full px-0.5">{displayName}</span>
+                      <span className="text-[8px] text-text-tertiary mt-0.5 uppercase tracking-wider">{sample.format}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-
-          {/* AI Chatbot */}
-          <AIChatbot />
         </div>
       </ScrollArea>
+
+      {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
+      <div className="border-t border-border-primary shrink-0 bg-bg-secondary/40 pb-3">
+        <AIChatbot />
+      </div>
     </aside>
   );
+}
+
+interface SectionHeaderProps {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+  expanded?: boolean;
+  onToggle?: () => void;
 }
 
 function SectionHeader({
   title,
   hint,
   action,
-}: {
-  title: string;
-  hint?: string;
-  action?: React.ReactNode;
-}) {
+  expanded = true,
+  onToggle,
+}: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-2 px-2 h-6">
-      <span className="text-[13px] font-semibold text-text-primary tracking-tight">{title}</span>
-      <div className="flex items-center gap-2">
+    <div 
+      onClick={onToggle}
+      className={`flex items-center justify-between mb-1 px-2 h-6 select-none ${onToggle ? 'cursor-pointer' : ''}`}
+    >
+      <div className="flex items-center gap-1.5">
+        {onToggle && (
+          <span className="text-text-tertiary">
+            {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          </span>
+        )}
+        <span className="text-[13px] font-semibold text-text-primary tracking-tight">{title}</span>
+      </div>
+      
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {hint && <span className="text-[10px] text-text-tertiary/60 font-medium uppercase tracking-[0.05em]">{hint}</span>}
         {action}
       </div>
