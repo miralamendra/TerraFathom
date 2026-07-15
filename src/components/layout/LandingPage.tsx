@@ -12,28 +12,15 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   const imageSlides = ['Geo1.png', 'Geo2.png', 'Geo3.png'];
   const baseImagePath = `${import.meta.env.BASE_URL}Images/`;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [displayedImageIndex, setDisplayedImageIndex] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      const nextIndex = (activeImageIndex + 1) % imageSlides.length;
-      setDisplayedImageIndex(activeImageIndex);
-      setActiveImageIndex(nextIndex);
+      setActiveImageIndex((prev) => (prev + 1) % imageSlides.length);
     }, 5000);
     return () => window.clearInterval(timer);
-  }, [activeImageIndex, imageSlides.length]);
+  }, [imageSlides.length]);
 
   const activeImage = `${baseImagePath}${imageSlides[activeImageIndex]}`;
-  const previousImage = `${baseImagePath}${imageSlides[displayedImageIndex]}`;
-
-  useEffect(() => {
-    setImageLoaded(false);
-    const img = new Image();
-    img.src = activeImage;
-    img.onload = () => setImageLoaded(true);
-    img.onerror = () => setImageLoaded(true);
-  }, [activeImage]);
 
   const viewportLabel =
     imageSlides[activeImageIndex] === 'Geo1.png'
@@ -184,24 +171,11 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
               <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
-                <motion.img
-                  key={previousImage}
-                  src={previousImage}
-                  alt="TerraFathom Workspace Viewport"
-                  initial={{ opacity: 1, scale: 1 }}
-                  animate={{ opacity: 0, scale: 1.01 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
-                />
-                <motion.img
+                <img
                   key={activeImage}
                   src={activeImage}
                   alt="TerraFathom Workspace Viewport"
-                  onLoad={() => setImageLoaded(true)}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.02 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
+                  className="w-full h-auto object-cover select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
