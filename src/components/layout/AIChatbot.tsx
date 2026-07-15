@@ -218,7 +218,7 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
         <div className="flex-1 min-h-0 flex flex-col gap-2.5 animate-fade-in px-2">
           
           {/* Model Selector Bar */}
-          <div className="flex items-center justify-between pb-1 px-1 border-b border-border-primary/10 select-none">
+          <div className="flex items-center justify-between pb-1 px-1 select-none">
             <span className="text-[9px] text-text-tertiary font-bold uppercase tracking-wider">Model</span>
             <select
               value={model}
