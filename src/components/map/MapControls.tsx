@@ -1,67 +1,106 @@
-import { Plus, Minus, Navigation } from 'lucide-react';
-import { IconButton } from '@/components/ui';
+import { Plus, Minus, Maximize, Box } from 'lucide-react';
 import { useMapStore } from '@/stores/map-store';
+import { useDataStore } from '@/stores/data-store';
+import { getViewportForBounds } from '@/core/map/viewport';
+import { cn } from '@/components/ui/utils';
 
 export function MapControls() {
   const zoom = useMapStore((s) => s.zoom);
   const bearing = useMapStore((s) => s.bearing);
   const is3D = useMapStore((s) => s.is3D);
-  const setViewport = useMapStore((s) => s.setViewport);
+  const animateViewport = useMapStore((s) => s.animateViewport);
   const toggle3D = useMapStore((s) => s.toggle3D);
   const resetNorth = useMapStore((s) => s.resetNorth);
 
-  const handleZoomIn = () => setViewport({ zoom: zoom + 0.5 });
-  const handleZoomOut = () => setViewport({ zoom: zoom - 0.5 });
+  const selectedDatasetId = useDataStore((s) => s.selectedDatasetId);
+  const datasets = useDataStore((s) => s.datasets);
+  const selectedDataset = selectedDatasetId ? datasets[selectedDatasetId] : null;
+
+  const handleZoomIn = () => animateViewport({ zoom: zoom + 0.5 }, 300);
+  const handleZoomOut = () => animateViewport({ zoom: zoom - 0.5 }, 300);
+
+  const handleFitToData = () => {
+    if (selectedDataset && selectedDataset.bounds) {
+      const newVp = getViewportForBounds(selectedDataset.bounds);
+      animateViewport({
+        longitude: newVp.longitude,
+        latitude: newVp.latitude,
+        zoom: newVp.zoom,
+        pitch: is3D ? 45 : 0,
+        bearing: is3D ? 15 : 0,
+      }, 1500);
+    }
+  };
 
   return (
-    <div className="absolute right-4 bottom-4 flex flex-col gap-1.5 z-30 select-none">
+    <div className="absolute left-4 top-4 flex flex-col bg-bg-elevated border border-border-primary rounded-control shadow-floating z-30 select-none overflow-hidden divide-y divide-border-primary backdrop-blur-md">
       {/* Zoom In */}
-      <IconButton
-        variant="secondary"
-        size="md"
+      <button
+        type="button"
         onClick={handleZoomIn}
         title="Zoom In"
-        className="shadow-md bg-bg-secondary border-border-primary hover:bg-bg-hover active:bg-bg-active"
+        className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors outline-none cursor-pointer"
       >
         <Plus size={16} />
-      </IconButton>
+      </button>
 
       {/* Zoom Out */}
-      <IconButton
-        variant="secondary"
-        size="md"
+      <button
+        type="button"
         onClick={handleZoomOut}
         title="Zoom Out"
-        className="shadow-md bg-bg-secondary border-border-primary hover:bg-bg-hover active:bg-bg-active"
+        className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors outline-none cursor-pointer"
       >
         <Minus size={16} />
-      </IconButton>
+      </button>
 
-      {/* Reset North */}
-      <IconButton
-        variant="secondary"
-        size="md"
+      {/* Compass Needle (Rotates bearing, resets bearing = 0° on click with 300ms transition) */}
+      <button
+        type="button"
         onClick={resetNorth}
-        title="Reset North"
-        className="shadow-md bg-bg-secondary border-border-primary hover:bg-bg-hover active:bg-bg-active"
+        title="Reset North (Compass)"
+        className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors outline-none cursor-pointer relative"
       >
-        <Navigation
-          size={16}
-          style={{ transform: `rotate(${bearing}deg)` }}
-          className="transition-transform duration-150 text-accent"
-        />
-      </IconButton>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          className="transition-transform duration-300 ease-out"
+          style={{ transform: `rotate(${-bearing}deg)` }}
+        >
+          {/* North needle */}
+          <path d="M12,2 L12,12 L6,12 Z" fill="#E6E8F0" />
+          <path d="M12,2 L18,12 L12,12 Z" fill="#E6E8F0" />
+          {/* South needle (Muted) */}
+          <path d="M12,22 L12,12 L6,12 Z" fill="#5F6578" />
+          <path d="M12,22 L18,12 L12,12 Z" fill="#5F6578" />
+        </svg>
+      </button>
 
-      {/* 3D / Pitch Toggle */}
-      <IconButton
-        variant={is3D ? 'primary' : 'secondary'}
-        size="md"
+      {/* 3D Perspective Toggle */}
+      <button
+        type="button"
         onClick={toggle3D}
         title={is3D ? 'Toggle 2D View' : 'Toggle 3D Perspective'}
-        className="shadow-md"
+        className={cn(
+          'w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors outline-none cursor-pointer',
+          is3D && 'text-accent bg-bg-active'
+        )}
       >
-        <span className="text-[10px] font-bold tracking-tight">3D</span>
-      </IconButton>
+        <Box size={16} />
+      </button>
+
+      {/* Fit to Data Bounds */}
+      <button
+        type="button"
+        onClick={handleFitToData}
+        disabled={!selectedDataset}
+        title="Fit Camera to Dataset"
+        className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active disabled:opacity-30 disabled:pointer-events-none transition-colors outline-none cursor-pointer"
+      >
+        <Maximize size={16} />
+      </button>
     </div>
   );
 }
+export default MapControls;

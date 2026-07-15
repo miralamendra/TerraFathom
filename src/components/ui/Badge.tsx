@@ -10,7 +10,7 @@ export function Badge({ className, variant = 'secondary', size = 'sm', ...props 
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center font-medium rounded-full border select-none',
+        'inline-flex items-center justify-center font-medium rounded border select-none',
         // Variants
         {
           'bg-accent-muted text-accent border-accent/20': variant === 'info',
@@ -22,7 +22,7 @@ export function Badge({ className, variant = 'secondary', size = 'sm', ...props 
         // Sizes
         {
           'px-1.5 py-0.5 text-[10px]': size === 'sm',
-          'px-2.5 py-1 text-xs': size === 'md',
+          'px-2 py-0.5 text-[11px]': size === 'md',
         },
         className
       )}

@@ -2,7 +2,7 @@ Create a file named RULES.md in the project root with EXACTLY the content below.
 Do not change wording. Do not summarize. Do not add extra files.
 
 ===== BEGIN RULES.md =====
-# PROJECT RULES — World-Class Geospatial Analytics Platform (Version 1)
+# PROJECT RULES - World-Class Geospatial Analytics Platform (Version 1)
 
 You are building a premium geospatial visualization app (not a Kepler.gl clone).
 Quality bar: Apple craftsmanship + Kepler usability + Notion cleanliness + Linear consistency + Mapbox performance + Figma polish.
@@ -35,8 +35,8 @@ No AI-generated look.
 ## Architecture laws
 src/
   app/
-  core/            # pure TS only — NO React, NO DOM, NO components imports
-  stores/          # Zustand domain stores only — no store imports another store
+  core/            # pure TS only - NO React, NO DOM, NO components imports
+  stores/          # Zustand domain stores only - no store imports another store
   components/      # React UI only
     ui/            # design system primitives only
     layout/
@@ -143,4 +143,126 @@ Must NOT build in V1:
    - files created/changed
    - commands to run
    - exact verification steps
+
+   # PROJECT RULES
+
+## Mission
+
+Build a world-class geospatial analytics platform.
+
+Quality target:
+
+Apple craftsmanship
+
+Linear consistency
+
+Notion clarity
+
+Figma usability
+
+Mapbox performance
+
+Professional GIS capability
+
+---
+
+## Core Principle
+
+Every decision must improve:
+
+* clarity
+* maintainability
+* usability
+* scalability
+
+Never optimize for speed of development.
+
+Always optimize for quality.
+
+---
+
+## Forbidden
+
+* AI-generated dashboard appearance
+* Glassmorphism
+* Neon colors
+* Decorative gradients
+* Large shadows
+* Random animations
+* Multiple competing accents
+* Unnecessary cards
+* Duplicate components
+* Duplicate logic
+* Arbitrary spacing
+* Arbitrary font sizes
+* Arbitrary colors
+
+---
+
+## Architecture Law
+
+components → hooks → stores → core
+
+Never reverse.
+
+core must never import React.
+
+stores must never import stores.
+
+No circular dependencies.
+
+---
+
+## Component Law
+
+One component per file.
+
+Named exports only.
+
+No component above 300 lines.
+
+Split before it becomes large.
+
+---
+
+## Feature Law
+
+Never build multiple features simultaneously.
+
+One feature.
+
+One review.
+
+One polish pass.
+
+Then continue.
+
+---
+
+## Quality Law
+
+Nothing is complete when it works.
+
+It is complete when:
+
+* works
+* feels intuitive
+* visually consistent
+* performs well
+* follows all laws
+
+---
+
+## Definition Of Done
+
+A feature is done only if:
+
+* functionality works
+* TypeScript passes
+* no console errors
+* spacing is consistent
+* typography is consistent
+* interaction feels professional
+* design review passes
+
 ===== END RULES.md =====

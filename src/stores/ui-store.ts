@@ -9,6 +9,7 @@ interface UIState {
   bottomDrawerHeight: number;
   selectedLayerId: string | null;
   selectedDatasetId: string | null;
+  selectedRowIndex: number | null;
   commandPaletteOpen: boolean;
 
   toggleLeftPanel: () => void;
@@ -19,7 +20,9 @@ interface UIState {
   setBottomDrawerHeight: (height: number) => void;
   setSelectedLayerId: (id: string | null) => void;
   setSelectedDatasetId: (id: string | null) => void;
+  setSelectedRowIndex: (index: number | null) => void;
   setCommandPaletteOpen: (open: boolean) => void;
+  setRightPanelOpen: (open: boolean) => void;
 }
 
 // LocalStorage Helper Keys
@@ -45,7 +48,7 @@ export const useUIStore = create<UIState>((set) => ({
   leftPanelOpen: getStorageValue('leftPanelOpen', true),
   rightPanelOpen: getStorageValue('rightPanelOpen', false),
   bottomDrawerOpen: getStorageValue('bottomDrawerOpen', false),
-  leftPanelWidth: getStorageValue('leftPanelWidth', 280),
+  leftPanelWidth: getStorageValue('leftPanelWidth', 320),
   rightPanelWidth: getStorageValue('rightPanelWidth', 320),
   bottomDrawerHeight: getStorageValue('bottomDrawerHeight', 240),
   selectedLayerId: null,
@@ -94,11 +97,11 @@ export const useUIStore = create<UIState>((set) => ({
       return { bottomDrawerHeight: clamped };
     }),
 
+  selectedRowIndex: null,
+
   setSelectedLayerId: (id: string | null) =>
     set(() => ({
       selectedLayerId: id,
-      // Automatically open right panel if a layer is selected, to show its settings
-      rightPanelOpen: id !== null ? true : getStorageValue('rightPanelOpen', false),
     })),
 
   setSelectedDatasetId: (id: string | null) =>
@@ -108,6 +111,18 @@ export const useUIStore = create<UIState>((set) => ({
       bottomDrawerOpen: id !== null ? true : getStorageValue('bottomDrawerOpen', false),
     })),
 
+  setSelectedRowIndex: (index: number | null) =>
+    set(() => ({
+      selectedRowIndex: index,
+    })),
+
   setCommandPaletteOpen: (open: boolean) =>
     set(() => ({ commandPaletteOpen: open })),
+
+  setRightPanelOpen: (open: boolean) => {
+    set(() => {
+      setStorageValue('rightPanelOpen', open);
+      return { rightPanelOpen: open };
+    });
+  },
 }));

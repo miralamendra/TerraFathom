@@ -30,22 +30,22 @@ export function Collapsible({
   };
 
   return (
-    <div className={cn('border border-border-primary rounded bg-bg-secondary overflow-hidden', className)}>
+    <div className={cn('flex flex-col', className)}>
       <button
         type="button"
         onClick={handleToggle}
-        className="w-full flex items-center justify-between p-3 text-sm font-medium text-text-primary hover:bg-bg-hover transition-colors select-none"
+        className="w-full flex items-center justify-between py-1.5 text-xs font-semibold uppercase tracking-wider text-text-secondary hover:text-text-primary transition-colors select-none text-left"
       >
         <span>{title}</span>
         <ChevronRight
-          size={16}
-          className={cn('text-text-secondary transition-transform duration-150', {
-            'rotate-95': isOpen,
+          size={14}
+          className={cn('text-text-tertiary transition-transform duration-150', {
+            'rotate-90': isOpen,
           })}
         />
       </button>
       {isOpen && (
-        <div className="border-t border-border-primary p-3 bg-bg-primary text-text-secondary text-sm">
+        <div className="pt-2 text-text-secondary text-sm">
           {children}
         </div>
       )}

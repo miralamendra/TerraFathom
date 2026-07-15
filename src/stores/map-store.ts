@@ -11,7 +11,11 @@ interface MapState {
   mapStyle: string;
   is3D: boolean;
 
+  // Transition params
+  transitionDuration: number;
+
   setViewport: (viewport: Partial<Viewport>) => void;
+  animateViewport: (viewport: Partial<Viewport>, duration?: number) => void;
   setMapStyle: (styleId: string) => void;
   toggle3D: () => void;
   resetNorth: () => void;
@@ -25,6 +29,7 @@ export const useMapStore = create<MapState>((set) => ({
   bearing: DEFAULT_VIEWPORT.bearing,
   mapStyle: 'dark-matter',
   is3D: false,
+  transitionDuration: 0,
 
   setViewport: (vp) =>
     set((state) => {
@@ -35,7 +40,25 @@ export const useMapStore = create<MapState>((set) => ({
         pitch: vp.pitch ?? state.pitch,
         bearing: vp.bearing ?? state.bearing,
       });
-      return next;
+      return {
+        ...next,
+        transitionDuration: 0, // Reset to 0 during manual gesture inputs
+      };
+    }),
+
+  animateViewport: (vp, duration = 1500) =>
+    set((state) => {
+      const next = clampViewport({
+        latitude: vp.latitude ?? state.latitude,
+        longitude: vp.longitude ?? state.longitude,
+        zoom: vp.zoom ?? state.zoom,
+        pitch: vp.pitch ?? state.pitch,
+        bearing: vp.bearing ?? state.bearing,
+      });
+      return {
+        ...next,
+        transitionDuration: duration,
+      };
     }),
 
   setMapStyle: (styleId) => set(() => ({ mapStyle: styleId })),
@@ -45,10 +68,12 @@ export const useMapStore = create<MapState>((set) => ({
       const next3D = !state.is3D;
       return {
         is3D: next3D,
-        // When entering 3D, set pitch to 45 for better visualization, otherwise reset to 0
         pitch: next3D ? 45 : 0,
+        bearing: next3D ? 15 : 0,
+        transitionDuration: 1500, // Smoothly animate 2D/3D toggle
       };
     }),
 
-  resetNorth: () => set(() => ({ bearing: 0 })),
+  resetNorth: () => set(() => ({ bearing: 0, transitionDuration: 300 })),
 }));
+export default useMapStore;

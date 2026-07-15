@@ -4,12 +4,14 @@ export interface PanelResizerProps {
   orientation: 'horizontal' | 'vertical';
   onMouseDown: (e: React.MouseEvent) => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function PanelResizer({ orientation, onMouseDown, className }: PanelResizerProps) {
+export function PanelResizer({ orientation, onMouseDown, className, style }: PanelResizerProps) {
   return (
     <div
       onMouseDown={onMouseDown}
+      style={style}
       className={cn(
         'group relative flex items-center justify-center bg-border-primary hover:bg-border-focus transition-colors duration-150 select-none z-30',
         orientation === 'horizontal'

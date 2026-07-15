@@ -1,0 +1,294 @@
+import { useState, useEffect } from 'react';
+import { Globe, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TerraFathomLogo } from '../ui/TerraFathomLogo';
+import { Dither } from '../ui/Dither';
+
+interface LandingPageProps {
+  onEnter: () => void;
+}
+
+export function LandingPage({ onEnter }: LandingPageProps) {
+  const [activeImage, setActiveImage] = useState<string>('/Images/Geo1.png');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImage((prev) => 
+        prev === '/Images/Geo1.png' ? '/Images/Geo2.png' : '/Images/Geo1.png'
+      );
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+  
+  const fadeUpProps = {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.35, ease: "easeInOut" }
+  };
+
+  const capabilities = [
+    { title: 'Interactive Mapping', desc: 'Render spatial telemetry overlays dynamically in the browser viewport.' },
+    { title: 'Spatial Analytics', desc: 'Query spatial adjacencies and calculate precise coordinate boundaries.' },
+    { title: 'Layer Management', desc: 'Deconstruct and filter dense multidimensional geospatial features.' },
+    { title: 'High-performance Rendering', desc: 'Project millions of active coordinate nodes with GPU speed.' },
+    { title: 'Data Visualization', desc: 'Map telemetry data points without aesthetic noise.' },
+    { title: 'Professional Workflows', desc: 'Analyze urban systems with a meticulously engineered GIS toolset.' },
+  ];
+
+  const gridStyle = {
+    backgroundImage: `
+      linear-gradient(to right, rgba(43, 43, 43, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(43, 43, 43, 0.05) 1px, transparent 1px)
+    `,
+    backgroundSize: '80px 80px',
+  };
+
+  return (
+    <div className="min-h-screen bg-[#111111] text-[#9E9A94] font-sans select-none overflow-x-hidden flex flex-col justify-between selection:bg-[#C8A46A]/20 selection:text-[#ECE8E1] relative" style={gridStyle}>
+      
+      {/* Background Interactive Dither Wave */}
+      <div className="absolute inset-0 z-0 opacity-[0.18] pointer-events-none overflow-hidden">
+        <Dither
+          waveColor={[0.78, 0.64, 0.42]}
+          disableAnimation={false}
+          enableMouseInteraction={false}
+          mouseRadius={0.35}
+          colorNum={4}
+          waveAmplitude={0.2}
+          waveFrequency={2.0}
+          waveSpeed={0.03}
+          pixelSize={3}
+        />
+      </div>
+
+      {/* Sticky Header Navigation */}
+      <nav className="sticky top-0 w-full bg-[#111111]/80 backdrop-blur-md border-b border-[#2B2B2B]/20 z-50 transition-all duration-300">
+        <div className="w-full max-w-[1280px] mx-auto px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={onEnter}>
+            <TerraFathomLogo size={20} />
+            <span className="font-sans text-[14px] md:text-[15px] font-bold tracking-[0.12em] text-[#ECE8E1] uppercase">
+              TerraFathom
+            </span>
+          </div>
+          <button 
+            onClick={onEnter} 
+            className="text-[14px] md:text-[15px] font-medium text-[#ECE8E1] hover:text-[#C8A46A] transition-colors duration-200 cursor-pointer"
+          >
+            Launch App
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Content Container */}
+      <div className="w-full max-w-[1280px] mx-auto px-8 flex-1 flex flex-col relative z-10">
+        <main className="flex-1 flex flex-col">
+          
+          {/* ==================================================== */}
+          {/* HERO SECTION */}
+          {/* ==================================================== */}
+          <section className="py-20 md:py-28 flex flex-col items-center text-center gap-10">
+            
+            <motion.div 
+              {...fadeUpProps}
+              className="flex flex-col items-center text-center gap-6 max-w-[850px]"
+            >
+              <span className="text-[13px] md:text-[14px] font-sans font-semibold tracking-[0.12em] text-[#C8A46A] uppercase">
+                TerraFathom Workspace
+              </span>
+
+              <h1 className="text-[44px] md:text-[72px] lg:text-[80px] font-bold text-[#ECE8E1] tracking-tight leading-[1.05] font-sans">
+                Understand space. Reveal patterns.
+              </h1>
+
+              <p className="text-[18px] md:text-[21px] font-normal leading-relaxed text-[#9E9A94] max-w-[680px] mx-auto">
+                An elegant, fast GIS workspace designed for telemetry observation, coordinate analysis, and structural urban&nbsp;understanding.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              {...fadeUpProps}
+              transition={{ ...fadeUpProps.transition, delay: 0.1 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 z-10 w-full"
+            >
+              <button
+                onClick={onEnter}
+                className="h-11 px-6 bg-[#ECE8E1] text-[#111111] hover:bg-[#ECE8E1]/90 font-medium text-[15px] md:text-[16px] rounded-control flex items-center justify-center transition-all duration-200 cursor-pointer shadow-tight active:scale-[0.98] w-full sm:w-auto"
+              >
+                Launch TerraFathom
+              </button>
+              <button
+                onClick={onEnter}
+                className="h-11 px-6 border border-[#2B2B2B] text-[#ECE8E1] hover:border-[#ECE8E1]/20 hover:bg-[#171717] font-medium text-[15px] md:text-[16px] rounded-control flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-[0.98] w-full sm:w-auto"
+              >
+                Documentation
+              </button>
+            </motion.div>
+
+            {/* Suspended Instrument Plate (Large Format Slideshow) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30, scale: 0.995 }}
+              animate={{ 
+                opacity: 1, 
+                y: [0, -6, 0],
+                scale: 1
+              }}
+              transition={{ 
+                opacity: { duration: 0.6, ease: "easeOut", delay: 0.2 },
+                scale: { duration: 0.6, ease: "easeOut", delay: 0.2 },
+                y: { repeat: Infinity, duration: 8, ease: "easeInOut" }
+              }}
+              className="w-full max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
+              onClick={onEnter}
+            >
+              {/* Top Window Header */}
+              <div className="flex items-center justify-between px-3 pb-2.5 border-b border-[#2B2B2B]/40">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#2B2B2B] group-hover:bg-[#C8A46A]/50 transition-colors duration-300" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#2B2B2B]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#2B2B2B]" />
+                </div>
+                <span className="font-mono text-[8px] tracking-[0.2em] text-[#9E9A94]/40 uppercase select-none">
+                  {activeImage === '/Images/Geo1.png' ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP' : 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'}
+                </span>
+                <div className="flex items-center gap-1">
+                  <div className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === '/Images/Geo1.png' ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`} />
+                  <div className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === '/Images/Geo2.png' ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`} />
+                </div>
+              </div>
+
+              {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
+              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
+                {/* Base Viewport Image */}
+                <img 
+                  src="/Images/Geo1.png" 
+                  alt="TerraFathom Workspace Viewport Surface" 
+                  className="w-full h-auto object-cover select-none"
+                />
+                
+                {/* Overlay Viewport Image (fades in/out smoothly over the base) */}
+                <motion.img 
+                  src="/Images/Geo2.png" 
+                  alt="TerraFathom Workspace Viewport Heatmap" 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: activeImage === '/Images/Geo2.png' ? 1 : 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                />
+                
+                {/* Apple Specular Diagonal Reflection */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none mix-blend-overlay z-10" />
+                
+                {/* Vignette Overlay for Depth */}
+                <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] pointer-events-none z-10" />
+              </div>
+              
+              {/* Target Crosshairs in Corners */}
+              <div className="absolute top-2.5 left-2.5 w-3.5 h-3.5 border-l border-t border-[#2B2B2B]/50 pointer-events-none group-hover:border-[#C8A46A]/40 transition-colors duration-300" />
+              <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 border-r border-t border-[#2B2B2B]/50 pointer-events-none group-hover:border-[#C8A46A]/40 transition-colors duration-300" />
+              <div className="absolute bottom-2.5 left-2.5 w-3.5 h-3.5 border-l border-b border-[#2B2B2B]/50 pointer-events-none group-hover:border-[#C8A46A]/40 transition-colors duration-300" />
+              <div className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 border-r border-b border-[#2B2B2B]/50 pointer-events-none group-hover:border-[#C8A46A]/40 transition-colors duration-300" />
+            </motion.div>
+
+          </section>
+
+          {/* ==================================================== */}
+          {/* PRODUCT OVERVIEW SECTION */}
+          {/* ==================================================== */}
+          <section className="py-24 md:py-32 flex flex-col items-center justify-center text-center gap-6 border-t border-[#2B2B2B]/40 max-w-[850px] mx-auto">
+            <span className="text-[13px] md:text-[14px] font-sans font-semibold tracking-[0.12em] text-[#C8A46A] uppercase block">
+              Overview
+            </span>
+            <p className="text-[18px] md:text-[21px] leading-relaxed text-[#ECE8E1] font-normal tracking-tight">
+              TerraFathom deconstructs dense multidimensional datasets into highly responsive analytical layers. Map viewports, topological indices, and attribute filters operate in perfect sync inside a single, zero-friction workspace.
+            </p>
+          </section>
+
+          {/* ==================================================== */}
+          {/* CAPABILITIES SECTION */}
+          {/* ==================================================== */}
+          <section className="py-24 md:py-32 flex flex-col items-center gap-16 border-t border-[#2B2B2B]/40">
+            
+            <div className="text-center">
+              <h2 className="text-[32px] md:text-[44px] lg:text-[48px] font-semibold tracking-tight text-[#ECE8E1] leading-tight">
+                Designed for Exploration
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
+              {capabilities.map((item, idx) => (
+                <motion.div 
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.25, ease: "easeInOut", delay: idx * 0.05 }}
+                  className="flex flex-col items-center text-center gap-3 group/cap px-4 transition-all duration-300"
+                >
+                  <span className="text-[14px] md:text-[15px] font-sans font-semibold tracking-wide text-[#C8A46A] uppercase">
+                    {item.title}
+                  </span>
+                  <p className="text-[16px] md:text-[18px] leading-relaxed text-[#9E9A94] group-hover/cap:text-[#ECE8E1] transition-colors duration-300">
+                    {item.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+
+          </section>
+
+          {/* ==================================================== */}
+          {/* FINAL CALL TO ACTION SECTION */}
+          {/* ==================================================== */}
+          <section className="py-24 md:py-32 flex flex-col items-center justify-center text-center gap-8 border-t border-[#2B2B2B]/40">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="flex flex-col items-center gap-4"
+            >
+              <h2 className="text-[32px] md:text-[44px] lg:text-[48px] font-semibold tracking-tight text-[#ECE8E1] leading-tight font-sans">
+                Built for Precision
+              </h2>
+              <p className="text-[18px] md:text-[21px] font-normal text-[#9E9A94] max-w-[500px]">
+                The instrument is ready.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.2, ease: "easeInOut", delay: 0.05 }}
+              className="flex items-center gap-2 group/btn"
+            >
+              <button
+                onClick={onEnter}
+                className="h-11 px-8 bg-[#171717] border border-[#2B2B2B] hover:border-[#C8A46A] hover:text-[#ECE8E1] text-[#ECE8E1] font-medium text-[15px] md:text-[16px] rounded-control transition-all duration-200 cursor-pointer shadow-tight active:scale-[0.98] flex items-center gap-2"
+              >
+                Launch TerraFathom <ArrowUpRight size={15} className="text-[#C8A46A] group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-300" />
+              </button>
+            </motion.div>
+          </section>
+
+        </main>
+      </div>
+
+      {/* ==================================================== */}
+      {/* FOOTER */}
+      {/* ==================================================== */}
+      <footer className="w-full py-10 px-8 text-center text-[10px] md:text-[11px] font-sans tracking-wide text-[#9E9A94]/40 border-t border-[#2B2B2B]/20 bg-[#111111] z-10">
+        <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-8">
+          <div className="flex items-center gap-2">
+            <Globe size={13} className="text-[#C8A46A]/40" />
+            <span>TERRAFATHOM v1.0</span>
+          </div>
+          <span>&copy; 2026 DEEP SPATIAL INTELLIGENCE RESEARCH. ALL RIGHTS RESERVED.</span>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
+
+export default LandingPage;

@@ -41,3 +41,23 @@ export function clampViewport(viewport: Viewport): Viewport {
     bearing: clampBearing(viewport.bearing),
   };
 }
+
+export function getViewportForBounds(
+  bounds: [number, number, number, number]
+): { longitude: number; latitude: number; zoom: number } {
+  const [minLng, minLat, maxLng, maxLat] = bounds;
+  const longitude = (minLng + maxLng) / 2;
+  const latitude = (minLat + maxLat) / 2;
+
+  const lngDiff = Math.abs(maxLng - minLng);
+  const latDiff = Math.abs(maxLat - minLat);
+  const maxDiff = Math.max(lngDiff, latDiff);
+
+  let zoom = 11; // default fallback
+  if (maxDiff > 0) {
+    // Basic logarithmic bounding box zoom calculation
+    zoom = Math.min(18, Math.max(1, Math.log2(360 / maxDiff) - 1));
+  }
+
+  return { longitude, latitude, zoom };
+}

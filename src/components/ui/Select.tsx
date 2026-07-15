@@ -4,25 +4,28 @@ import { cn } from './utils';
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options?: { value: string | number; label: string }[];
+  variant?: 'default' | 'ghost';
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, options, children, disabled, ...props }, ref) => {
+  ({ className, options, children, disabled, variant = 'default', ...props }, ref) => {
     return (
       <div className={cn('relative w-full', className)}>
         <select
           ref={ref}
           disabled={disabled}
           className={cn(
-            'w-full pl-2.5 pr-8 py-1.5 bg-bg-secondary text-text-primary text-sm rounded border border-border-primary outline-none transition-all duration-150 appearance-none cursor-pointer',
-            'focus:border-border-focus focus:ring-1 focus:ring-border-focus',
+            'w-full pl-2.5 pr-8 h-8 text-text-primary text-sm rounded-control outline-none transition-all duration-150 appearance-none cursor-pointer',
+            variant === 'ghost' 
+              ? 'bg-transparent border border-transparent hover:bg-bg-hover text-text-secondary hover:text-text-primary' 
+              : 'bg-bg-tertiary border border-border-primary focus:border-border-focus focus:ring-0',
             'disabled:opacity-50 disabled:pointer-events-none'
           )}
           {...props}
         >
           {options
             ? options.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-bg-secondary text-text-primary">
+                <option key={opt.value} value={opt.value} className="bg-bg-elevated text-text-primary">
                   {opt.label}
                 </option>
               ))

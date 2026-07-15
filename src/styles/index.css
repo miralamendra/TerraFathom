@@ -3,30 +3,131 @@
 @tailwind utilities;
 
 :root {
-  --color-bg-primary: #0F1117;
-  --color-bg-secondary: #161922;
-  --color-bg-tertiary: #1E2130;
-  --color-bg-hover: #252836;
-  --color-bg-active: #2E3348;
-  --color-bg-elevated: #1A1D2B;
+  /* Linear Theme Tokens */
+  --color-void: #08090a;
+  --color-carbon: #0f1011;
+  --color-obsidian: #161718;
+  --color-graphite: #23252a;
+  --color-smoke: #383b3f;
+  --color-ash: #62666d;
+  --color-fog: #8a8f98;
+  --color-mist: #d0d6e0;
+  --color-bone: #e5e5e6;
+  --color-paper: #ffffff;
+  --color-acid-lime: #e4f222;
+  --color-pulse-green: #27a644;
+  --color-coral-red: #eb5757;
+  --color-signal-teal: #02b8cc;
+  --color-iris-violet: #6366f1;
+  --color-lavender: #8b5cf6;
 
-  --color-border-primary: #2A2D3E;
-  --color-border-secondary: #353849;
-  --color-border-focus: #4C8BF5;
+  /* Portal Style Reference Tokens */
+  --color-signal-blue: #007aff;
+  --color-ink-black: #000000;
+  --color-graphite-ref: #3e3e3e;
+  --color-smoke-ref: #636363;
+  --color-paper-white: #ffffff;
+  --color-ash-mist: #f7f7f7;
+  --gradient-dusk-gradient: linear-gradient(180deg, #4a7ff2 0%, #7b7ed8 30%, #c98ab5 65%, #e8a87c 100%);
+  --font-perfectly-nineties-regular: 'Playfair Display', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
 
-  --color-text-primary: #E6E8F0;
-  --color-text-secondary: #959BAD;
-  --color-text-tertiary: #5F6578;
-  --color-text-inverse: #0F1117;
+  /* App Workspace Color Palette (OKLCH Custom Theme) */
+  --background: oklch(0.9195 0.0169 88.0030);
+  --foreground: oklch(0.2350 0 0);
+  --card: oklch(0.9530 0.0156 86.4257);
+  --card-foreground: oklch(0.2350 0 0);
+  --popover: oklch(0.9530 0.0156 86.4257);
+  --popover-foreground: oklch(0.2350 0 0);
+  --primary: oklch(0.3012 0 0);
+  --primary-foreground: oklch(0.9169 0.0175 99.6160);
+  --secondary: oklch(0.8647 0.0201 87.5232);
+  --secondary-foreground: oklch(0.3012 0 0);
+  --muted: oklch(0.8340 0.0232 87.1630);
+  --muted-foreground: oklch(0.4688 0.0136 84.5932);
+  --accent: oklch(0.9169 0.0175 99.6160);
+  --accent-foreground: oklch(0.3012 0 0);
+  --destructive: oklch(0.5771 0.2152 27.3250);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8434 0.0231 87.1621);
+  --input: oklch(0.8434 0.0231 87.1621);
+  --ring: oklch(0.3012 0 0);
+  --radius: 0.5rem;
 
-  --color-accent: #4C8BF5;
-  --color-accent-hover: #3B7AE4;
-  --color-accent-muted: rgba(76, 139, 245, 0.15);
+  /* Surfaces - collapse to two roles, not four */
+  --surface-base: var(--background);
+  --surface-float: var(--card);
+  --border-hairline: var(--border);
 
-  --color-success: #34D399;
-  --color-warning: #FBBF24;
-  --color-error: #F87171;
-  --color-info: #60A5FA;
+  /* Color Mappings for App Components (Light mode defaults) */
+  --color-bg-primary: var(--background);
+  --color-bg-secondary: var(--card);
+  --color-bg-tertiary: var(--muted);
+  --color-bg-hover: oklch(0.8647 0.0201 87.5232 / 0.15);
+  --color-bg-active: oklch(0.8647 0.0201 87.5232 / 0.35);
+  --color-bg-elevated: var(--card);
+
+  --color-border-primary: var(--border);
+  --color-border-secondary: var(--border);
+  --color-border-focus: var(--ring);
+
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-tertiary: var(--muted-foreground);
+  --color-text-disabled: var(--muted-foreground);
+  --color-text-inverse: var(--background);
+
+  --color-accent: var(--color-signal-blue);
+  --color-accent-hover: var(--primary);
+  --color-accent-muted: var(--secondary);
+
+  --color-success: oklch(0.6863 0.1743 34.2614);
+  --color-warning: oklch(0.7057 0.0250 82.0932);
+  --color-error: var(--destructive);
+  --color-info: var(--color-signal-blue);
+}
+
+.dark {
+  --background: oklch(0.1913 0 0);
+  --foreground: oklch(0.9173 0.0133 82.4015);
+  --card: oklch(0.2264 0 0);
+  --card-foreground: oklch(0.9173 0.0133 82.4015);
+  --popover: oklch(0.2264 0 0);
+  --popover-foreground: oklch(0.9173 0.0133 82.4015);
+  --primary: oklch(0.8520 0.0205 100.6306);
+  --primary-foreground: oklch(0.3329 0 0);
+  --secondary: oklch(0.2520 0 0);
+  --secondary-foreground: oklch(0.8520 0.0205 100.6306);
+  --muted: oklch(0.2850 0 0);
+  --muted-foreground: oklch(0.6348 0.0113 81.7875);
+  --accent: oklch(0.3329 0 0);
+  --accent-foreground: oklch(0.8520 0.0205 100.6306);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2931 0 0);
+  --input: oklch(0.2931 0 0);
+  --ring: oklch(0.8520 0.0205 100.6306);
+
+  --surface-base: var(--background);
+  --surface-float: var(--card);
+  --border-hairline: var(--border);
+
+  --color-bg-primary: var(--background);
+  --color-bg-secondary: var(--card);
+  --color-bg-tertiary: var(--muted);
+  --color-bg-hover: oklch(0.2520 0 0 / 0.15);
+  --color-bg-active: oklch(0.2520 0 0 / 0.35);
+  --color-bg-elevated: var(--card);
+
+  --color-border-primary: var(--border);
+  --color-border-secondary: var(--border);
+  --color-border-focus: var(--ring);
+
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-tertiary: var(--muted-foreground);
+  --color-text-disabled: var(--muted-foreground);
+  --color-text-inverse: var(--background);
 }
 
 * {
@@ -38,9 +139,64 @@
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-primary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-secondary);
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-slide-up {
+  animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Focus Outline Transitions */
+.focus-ring {
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.focus-ring:focus-visible {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 1.5px rgba(92, 126, 203, 0.25);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    border-color: var(--color-border-primary);
+  }
+  50% {
+    border-color: var(--color-text-tertiary);
+  }
+}
+.animate-pulse-glow {
+  animation: pulseGlow 4.5s infinite ease-in-out;
 }
