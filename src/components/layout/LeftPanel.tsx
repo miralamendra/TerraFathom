@@ -215,7 +215,7 @@ export function LeftPanel() {
 
       {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
       <div className={cn(
-        "border-t border-border-primary bg-bg-secondary/40 px-3 pb-3 flex flex-col min-h-0",
+        "border-t border-border-primary/20 bg-bg-secondary/40 px-3 pb-3 flex flex-col min-h-0",
         useUIStore((s) => s.isChatOpen) ? "flex-1 min-h-[180px]" : "shrink-0"
       )}>
         <AIChatbot />
