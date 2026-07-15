@@ -108,7 +108,7 @@ export function LeftPanel() {
 
       {/* Scrollable sections */}
       <div className={cn(
-        "overflow-y-auto scrollbar-thin border-b border-border-primary/10",
+        "overflow-y-auto scrollbar-thin",
         isChatOpen ? "flex-initial max-h-[50%] min-h-0" : "flex-1 min-h-0"
       )}>
         <div className="px-3 pb-6 flex flex-col gap-5 mt-2">

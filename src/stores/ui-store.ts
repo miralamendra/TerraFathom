@@ -151,7 +151,7 @@ export const useUIStore = create<UIState>((set) => ({
   selectedChatModel: getStorageValue('selectedChatModel', 'gemini-2.5-flash'),
   chatHistory: [],
   isChatLoading: false,
-  isChatOpen: false,
+  isChatOpen: true,
 
   setSelectionMode: (mode) => set(() => ({ selectionMode: mode, selectionCoordinates: [] })),
   setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
