@@ -12,15 +12,19 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   const imageSlides = ['Images/Geo1.png', 'Images/Geo2.png', 'Images/Geo3.png'];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [displayedImageIndex, setDisplayedImageIndex] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveImageIndex((prev) => (prev + 1) % imageSlides.length);
+      const nextIndex = (activeImageIndex + 1) % imageSlides.length;
+      setDisplayedImageIndex(activeImageIndex);
+      setActiveImageIndex(nextIndex);
     }, 5000);
     return () => window.clearInterval(timer);
-  }, [imageSlides.length]);
+  }, [activeImageIndex, imageSlides.length]);
 
   const activeImage = `${import.meta.env.BASE_URL}${imageSlides[activeImageIndex]}`;
+  const previousImage = `${import.meta.env.BASE_URL}${imageSlides[displayedImageIndex]}`;
 
   useEffect(() => {
     setImageLoaded(false);
@@ -180,14 +184,23 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
               <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
                 <motion.img
+                  key={previousImage}
+                  src={previousImage}
+                  alt="TerraFathom Workspace Viewport"
+                  initial={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 0, scale: 1.01 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
+                />
+                <motion.img
                   key={activeImage}
                   src={activeImage}
                   alt="TerraFathom Workspace Viewport"
                   onLoad={() => setImageLoaded(true)}
-                  initial={{ opacity: 0, scale: 1.01 }}
-                  animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.01 }}
-                  transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full h-auto object-cover select-none"
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.02 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
