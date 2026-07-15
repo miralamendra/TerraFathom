@@ -1,4 +1,3 @@
-import { ScrollArea } from '@/components/ui';
 import { useDataStore } from '@/stores/data-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -107,7 +106,10 @@ export function LeftPanel() {
       </div>
 
       {/* Scrollable sections */}
-      <ScrollArea className="flex-1 min-h-0">
+      <div className={cn(
+        "overflow-y-auto scrollbar-thin border-b border-border-primary/10",
+        useUIStore.getState().isChatOpen ? "flex-initial max-h-[50%] min-h-0" : "flex-1 min-h-0"
+      )}>
         <div className="px-3 pb-6 flex flex-col gap-5 mt-2">
           
           {/* Datasets list (with nested layers) */}
@@ -209,10 +211,13 @@ export function LeftPanel() {
             )}
           </div>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
-      <div className="border-t border-border-primary shrink-0 bg-bg-secondary/40 px-3 pb-3">
+      <div className={cn(
+        "border-t border-border-primary bg-bg-secondary/40 px-3 pb-3 flex flex-col min-h-0",
+        useUIStore((s) => s.isChatOpen) ? "flex-1 min-h-[180px]" : "shrink-0"
+      )}>
         <AIChatbot />
       </div>
     </aside>
