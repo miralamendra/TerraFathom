@@ -16,6 +16,7 @@ import { AIChatbot } from './AIChatbot';
 export function LeftPanel() {
   const open = useUIStore((s) => s.leftPanelOpen);
   const width = useUIStore((s) => s.leftPanelWidth);
+  const isChatOpen = useUIStore((s) => s.isChatOpen);
 
   const datasets = useDataStore((s) => s.datasets);
   const addDataset = useDataStore((s) => s.addDataset);
@@ -108,7 +109,7 @@ export function LeftPanel() {
       {/* Scrollable sections */}
       <div className={cn(
         "overflow-y-auto scrollbar-thin border-b border-border-primary/10",
-        useUIStore.getState().isChatOpen ? "flex-initial max-h-[50%] min-h-0" : "flex-1 min-h-0"
+        isChatOpen ? "flex-initial max-h-[50%] min-h-0" : "flex-1 min-h-0"
       )}>
         <div className="px-3 pb-6 flex flex-col gap-5 mt-2">
           
@@ -216,7 +217,7 @@ export function LeftPanel() {
       {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
       <div className={cn(
         "border-t border-border-primary/20 bg-bg-secondary/40 px-3 pb-3 flex flex-col min-h-0",
-        useUIStore((s) => s.isChatOpen) ? "flex-1 min-h-[180px]" : "shrink-0"
+        isChatOpen ? "flex-1 min-h-[180px]" : "shrink-0"
       )}>
         <AIChatbot />
       </div>
