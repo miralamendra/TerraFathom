@@ -27,6 +27,19 @@ export function AIChatbot() {
   const [showConfig, setShowConfig] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (envKey && !apiKey) {
+      setApiKey(envKey);
+    }
+  }, [apiKey, setApiKey]);
+
+  useEffect(() => {
+    if (apiKey) {
+      setShowConfig(false);
+    }
+  }, [apiKey]);
+
   // Auto-scroll chat window to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

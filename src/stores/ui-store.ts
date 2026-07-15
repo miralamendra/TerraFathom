@@ -62,6 +62,12 @@ const setStorageValue = <T>(key: string, value: T): void => {
   }
 };
 
+const getInitialApiKey = (): string => {
+  const storedKey = getStorageValue<string>('geminiApiKey', '');
+  const envApiKey = import.meta.env.VITE_GEMINI_API_KEY ?? '';
+  return storedKey || envApiKey;
+};
+
 export const useUIStore = create<UIState>((set) => ({
   leftPanelOpen: getStorageValue('leftPanelOpen', true),
   rightPanelOpen: getStorageValue('rightPanelOpen', false),
@@ -147,7 +153,7 @@ export const useUIStore = create<UIState>((set) => ({
   // Selection & Chat Features
   selectionMode: 'none',
   selectionCoordinates: [],
-  geminiApiKey: getStorageValue('geminiApiKey', ''),
+  geminiApiKey: getInitialApiKey(),
   selectedChatModel: getStorageValue('selectedChatModel', 'gemini-2.5-flash'),
   chatHistory: [],
   isChatLoading: false,
