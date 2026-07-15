@@ -3,6 +3,7 @@ import { Bot, Key, Trash2, Loader2, Send, ChevronDown, ChevronUp } from 'lucide-
 import { useUIStore } from '@/stores/ui-store';
 import { useDataStore } from '@/stores/data-store';
 import { useMapStore } from '@/stores/map-store';
+import { Input, Button } from '@/components/ui';
 import { toast } from 'sonner';
 
 export function AIChatbot() {
@@ -126,65 +127,70 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
       .replace(/>/g, '&gt;');
 
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/`(.*?)`/g, '<code class="bg-[#2B2B2B] px-1 py-0.5 rounded text-[#C8A46A] font-mono text-[10px]">$1</code>');
+    html = html.replace(/`(.*?)`/g, '<code class="bg-bg-tertiary px-1 py-0.5 rounded text-[#C8A46A] font-mono text-[10px]">$1</code>');
     html = html.replace(/^\s*-\s+(.*?)$/gm, '<li class="ml-4 list-disc text-text-secondary">$1</li>');
 
     return (
-      <div 
-        className="space-y-1 text-xs text-text-secondary leading-relaxed break-words"
+      <span 
+        className="text-text-secondary leading-relaxed break-words"
         dangerouslySetInnerHTML={{ __html: html.replace(/\n/g, '<br />') }}
       />
     );
   };
 
   return (
-    <div className="flex flex-col gap-2 mt-4 px-2 select-none">
+    <div className="flex flex-col gap-2.5 mt-2 px-2 select-none font-sans text-xs">
       
       {/* Section Header */}
-      <div className="flex items-center justify-between h-6 border-b border-border-primary/30 pb-2">
-        <div className="flex items-center gap-1.5 cursor-pointer" onClick={toggleChat}>
-          <Bot size={13} className="text-[#C8A46A]" />
+      <div 
+        onClick={toggleChat}
+        className="flex items-center justify-between h-6 border-b border-border-primary/20 pb-1 cursor-pointer hover:border-border-primary/50 transition-colors"
+      >
+        <div className="flex items-center gap-1.5">
+          <Bot size={13} className="text-[#C8A46A]" strokeWidth={1.5} />
           <span className="text-[13px] font-semibold text-text-primary tracking-tight">
             AI Assistant
           </span>
-          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary" /> : <ChevronDown size={12} className="text-text-tertiary" />}
         </div>
-        
-        {isChatOpen && (
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => setShowConfig(!showConfig)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowConfig(!showConfig);
+            }}
             title="Configure settings"
             className="w-5 h-5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
           >
-            <Key size={11} />
+            <Key size={11} strokeWidth={1.5} />
           </button>
-        )}
+          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary animate-fade-in" /> : <ChevronDown size={12} className="text-text-tertiary animate-fade-in" />}
+        </div>
       </div>
 
-      {/* Configurations panel */}
+      {/* Settings configuration panel */}
       {isChatOpen && showConfig && (
-        <div className="bg-[#171717] p-2.5 border border-border-primary/50 rounded-control flex flex-col gap-2 shrink-0">
+        <div className="bg-[#171717]/80 p-2.5 border border-border-primary/50 rounded-control flex flex-col gap-2 shrink-0 animate-fade-in">
           <div>
-            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase">
+            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase tracking-wider">
               Gemini API Key
             </label>
-            <input
+            <Input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Paste API Key..."
-              className="w-full h-7 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
+              placeholder="Paste Key..."
+              className="h-8 text-xs bg-[#111111]"
             />
           </div>
           <div>
-            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase">
-              Model
+            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase tracking-wider">
+              Model Model Selection
             </label>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full h-7 px-2 bg-[#111111] border border-[#2B2B2B] rounded-control text-xs text-text-primary outline-none cursor-pointer"
+              className="w-full h-8 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary outline-none cursor-pointer focus:border-border-focus"
             >
               <option value="gemini-2.5-flash">Gemma 4 31B (gemini-2.5-flash)</option>
               <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
@@ -198,7 +204,7 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
               clearChatHistory();
               toast.success('Conversation history reset');
             }}
-            className="h-6 border border-[#2B2B2B] hover:bg-[#2B2B2B]/20 text-[10px] font-medium rounded-control flex items-center justify-center gap-1 cursor-pointer text-red-400"
+            className="h-7 border border-border-primary hover:bg-[#2B2B2B]/20 text-[10px] font-medium rounded-control flex items-center justify-center gap-1 cursor-pointer text-red-400/80 transition-colors"
           >
             <Trash2 size={11} />
             <span>Reset History</span>
@@ -206,81 +212,65 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
         </div>
       )}
 
-      {/* Expanded Chat Drawer */}
+      {/* Expanded Transcript Chatbox */}
       {isChatOpen && (
-        <div className="flex flex-col gap-2">
-          {/* Messages Scroll Area */}
-          <div className="h-[250px] overflow-y-auto p-2 border border-border-primary/50 bg-[#171717]/40 rounded-control space-y-3 flex flex-col">
+        <div className="flex flex-col gap-2.5 animate-fade-in">
+          
+          {/* Scroll Area containing log output */}
+          <div className="h-[250px] overflow-y-auto p-3 border border-border-primary bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">
             {/* Initial welcome message */}
-            <div className="flex gap-2">
-              <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <Bot size={11} className="text-[#C8A46A]" />
-              </div>
-              <div className="flex-1">
-                <div className="text-xs text-text-secondary leading-relaxed bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40">
-                  Hello! Ask me spatial queries about your loaded layers and coordinates.
-                </div>
-              </div>
+            <div className="text-text-tertiary leading-relaxed text-xs">
+              <span className="font-semibold text-[#C8A46A] mr-1.5 font-mono select-all">TF_AI:</span>
+              Hello! Ask me spatial queries about your loaded layers and coordinates.
             </div>
 
-            {/* History Messages */}
+            {/* Conversational transcript elements */}
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className="flex gap-2">
+              <div key={idx} className="leading-relaxed text-xs">
                 {msg.role === 'model' ? (
-                  <>
-                    <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot size={11} className="text-[#C8A46A]" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40">
-                        {renderMessageContent(msg.parts[0].text)}
-                      </div>
-                    </div>
-                  </>
+                  <div className="text-text-secondary">
+                    <span className="font-semibold text-[#C8A46A] mr-1.5 font-mono select-all">TF_AI:</span>
+                    {renderMessageContent(msg.parts[0].text)}
+                  </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-end pl-6">
-                    <div className="bg-[#ECE8E1] text-[#111111] p-2 rounded text-xs font-normal">
-                      {msg.parts[0].text}
-                    </div>
+                  <div className="text-text-primary">
+                    <span className="font-semibold text-text-tertiary mr-1.5 font-mono select-all">USER:</span>
+                    {msg.parts[0].text}
                   </div>
                 )}
               </div>
             ))}
 
-            {/* Loading placeholder */}
+            {/* Think Loading placeholder */}
             {isChatLoading && (
-              <div className="flex gap-2">
-                <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot size={11} className="text-[#C8A46A]" />
-                </div>
-                <div className="flex-1">
-                  <div className="bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40 flex items-center gap-1.5 text-xs text-text-tertiary">
-                    <Loader2 size={10} className="animate-spin text-[#C8A46A]" />
-                    <span>Thinking...</span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-1.5 text-xs text-text-tertiary leading-relaxed">
+                <span className="font-semibold text-[#C8A46A] font-mono">TF_AI:</span>
+                <Loader2 size={10} className="animate-spin text-[#C8A46A]" />
+                <span className="italic font-light">Analyzing viewport parameters...</span>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Chat Form */}
-          <form onSubmit={handleSend} className="flex gap-1.5 shrink-0">
-            <input
+          {/* Inline Chat form */}
+          <form onSubmit={handleSend} className="flex gap-2 shrink-0 items-center">
+            <Input
               type="text"
               value={inputMsg}
               disabled={isChatLoading}
               onChange={(e) => setInputMsg(e.target.value)}
-              placeholder="Ask AI details..."
-              className="flex-1 h-8 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
+              placeholder="Query workspace..."
+              className="flex-1 h-8 text-xs bg-bg-tertiary"
             />
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="sm"
               disabled={isChatLoading || !inputMsg.trim()}
-              className="w-8 h-8 bg-[#ECE8E1] text-[#111111] disabled:opacity-30 disabled:cursor-not-allowed rounded-control flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0"
+              className="w-8 h-8 rounded-control shrink-0 active:scale-95 transition-all p-0 flex items-center justify-center"
             >
               <Send size={11} />
-            </button>
+            </Button>
           </form>
         </div>
       )}
