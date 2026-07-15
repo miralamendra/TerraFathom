@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { DeckGL, FlyToInterpolator } from 'deck.gl';
+import { DeckGL, FlyToInterpolator, GeoJsonLayer } from 'deck.gl';
 import { useMapStore } from '@/stores/map-store';
 import { getMapStyleUrl } from '@/core/map/map-styles';
 import { useUIStore } from '@/stores/ui-store';
 import { useDataStore } from '@/stores/data-store';
 import { useDeckLayers } from '@/hooks/use-deck-layers';
 import { useMapTooltip } from '@/hooks/use-map-tooltip';
+import { toast } from 'sonner';
 
 // easeInOutCubic transition easing function
 const easeInOutCubic = (t: number) => {
@@ -16,6 +17,7 @@ const easeInOutCubic = (t: number) => {
 export function MapContainer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const dragStartRef = useRef<[number, number] | null>(null);
 
   const latitude = useMapStore((s) => s.latitude);
   const longitude = useMapStore((s) => s.longitude);
@@ -28,6 +30,10 @@ export function MapContainer() {
 
   const datasets = useDataStore((s) => s.datasets);
   const datasetCount = Object.keys(datasets).length;
+
+  const selectionMode = useUIStore((s) => s.selectionMode);
+  const selectionCoords = useUIStore((s) => s.selectionCoordinates);
+  const setSelectionCoords = useUIStore((s) => s.setSelectionCoordinates);
 
   const leftOpen = useUIStore((s) => s.leftPanelOpen);
   const rightOpen = useUIStore((s) => s.rightPanelOpen);
@@ -42,9 +48,13 @@ export function MapContainer() {
   const setHoverInfo = useMapTooltip((s) => s.setHoverInfo);
   const setSelectedRowIndex = useUIStore((s) => s.setSelectedRowIndex);
 
-  const handleClick = (info: {
-    object?: Record<string, any>;
-  }) => {
+  const handleClick = (info: any) => {
+    if (selectionMode === 'point' && info.coordinate) {
+      setSelectionCoords([info.coordinate]);
+      toast.success('Point selection registered.');
+      return;
+    }
+
     if (info.object) {
       // Check if it's a GeoJSON feature or a raw record
       const record = info.object.properties ? info.object.properties : info.object;
@@ -191,6 +201,83 @@ export function MapContainer() {
     }
   };
 
+  // Drawing gesture handlers
+  const handleDragStart = (info: any) => {
+    setHoverInfo(null);
+    if (selectionMode === 'none') return;
+    
+    const coord = info.coordinate as [number, number];
+    if (coord) {
+      dragStartRef.current = coord;
+      setSelectionCoords([coord]);
+    }
+  };
+
+  const handleDrag = (info: any) => {
+    if (selectionMode === 'none' || !dragStartRef.current) return;
+
+    const curr = info.coordinate as [number, number];
+    if (!curr) return;
+
+    if (selectionMode === 'rectangle') {
+      const start = dragStartRef.current;
+      const rect = [
+        start,
+        [curr[0], start[1]],
+        curr,
+        [start[0], curr[1]],
+        start
+      ] as [number, number][];
+      setSelectionCoords(rect);
+    } else if (selectionMode === 'freehand') {
+      setSelectionCoords([...selectionCoords, curr]);
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (selectionMode === 'none') return;
+    dragStartRef.current = null;
+    toast.success('Selection boundary registered.');
+  };
+
+  // Build selection preview layer overlay
+  let selectionLayer: GeoJsonLayer | null = null;
+  if (selectionCoords.length > 0) {
+    let geojson: any = null;
+    if (selectionMode === 'point') {
+      geojson = {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: selectionCoords[0]
+        }
+      };
+    } else if (selectionCoords.length > 2) {
+      geojson = {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [selectionCoords]
+        }
+      };
+    }
+
+    if (geojson) {
+      selectionLayer = new GeoJsonLayer({
+        id: 'selection-overlay-layer',
+        data: geojson,
+        getFillColor: [200, 164, 106, 30], // 30% opacity warm brass
+        getLineColor: [200, 164, 106, 220],
+        getLineWidth: 2,
+        lineWidthUnits: 'pixels',
+        getPointRadius: 8,
+        pointRadiusUnits: 'pixels',
+        getPointRadiusMinPixels: 4,
+        getPointRadiusMaxPixels: 15,
+      });
+    }
+  }
+
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden bg-bg-primary">
       {/* MapLibre Canvas */}
@@ -200,16 +287,18 @@ export function MapContainer() {
       <DeckGL
         viewState={viewState}
         onViewStateChange={handleViewStateChange}
-        controller={{
-          doubleClickZoom: true,
-          dragRotate: true,
-          touchRotate: true,
-        }}
-        layers={deckLayers}
+        controller={
+          selectionMode === 'none'
+            ? { doubleClickZoom: true, dragRotate: true, touchRotate: true, dragPan: true }
+            : { doubleClickZoom: false, dragRotate: false, touchRotate: false, dragPan: false }
+        }
+        layers={selectionLayer ? [...deckLayers, selectionLayer] : deckLayers}
         getCursor={({ isDragging }) => (isDragging ? 'grabbing' : 'grab')}
         onHover={handleHover}
         onClick={handleClick}
-        onDragStart={() => setHoverInfo(null)}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
       />
 
       {/* Quiet, unboxed empty state nudge bottom-left */}

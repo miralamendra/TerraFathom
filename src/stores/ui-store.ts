@@ -23,6 +23,24 @@ interface UIState {
   setSelectedRowIndex: (index: number | null) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setRightPanelOpen: (open: boolean) => void;
+
+  // New features: drawing selection and AI chat
+  selectionMode: 'none' | 'point' | 'rectangle' | 'freehand';
+  selectionCoordinates: [number, number][];
+  geminiApiKey: string;
+  selectedChatModel: string;
+  chatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
+  isChatLoading: boolean;
+  isChatOpen: boolean;
+
+  setSelectionMode: (mode: 'none' | 'point' | 'rectangle' | 'freehand') => void;
+  setSelectionCoordinates: (coords: [number, number][]) => void;
+  setGeminiApiKey: (key: string) => void;
+  setSelectedChatModel: (model: string) => void;
+  addChatMessage: (role: 'user' | 'model', text: string) => void;
+  clearChatHistory: () => void;
+  setChatLoading: (loading: boolean) => void;
+  toggleChat: () => void;
 }
 
 // LocalStorage Helper Keys
@@ -125,4 +143,30 @@ export const useUIStore = create<UIState>((set) => ({
       return { rightPanelOpen: open };
     });
   },
+
+  // Selection & Chat Features
+  selectionMode: 'none',
+  selectionCoordinates: [],
+  geminiApiKey: getStorageValue('geminiApiKey', ''),
+  selectedChatModel: getStorageValue('selectedChatModel', 'gemini-2.5-flash'),
+  chatHistory: [],
+  isChatLoading: false,
+  isChatOpen: false,
+
+  setSelectionMode: (mode) => set(() => ({ selectionMode: mode, selectionCoordinates: [] })),
+  setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
+  setGeminiApiKey: (key) => {
+    setStorageValue('geminiApiKey', key);
+    set(() => ({ geminiApiKey: key }));
+  },
+  setSelectedChatModel: (model) => {
+    setStorageValue('selectedChatModel', model);
+    set(() => ({ selectedChatModel: model }));
+  },
+  addChatMessage: (role, text) => set((state) => ({
+    chatHistory: [...state.chatHistory, { role, parts: [{ text }] }]
+  })),
+  clearChatHistory: () => set(() => ({ chatHistory: [] })),
+  setChatLoading: (loading) => set(() => ({ isChatLoading: loading })),
+  toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
 }));

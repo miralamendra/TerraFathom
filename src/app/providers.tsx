@@ -12,10 +12,18 @@ export function Providers({ children }: ProvidersProps) {
       <Toaster 
         theme="dark" 
         position="top-right" 
-        closeButton 
+        closeButton
+        duration={2000}
         toastOptions={{
-          className: "bg-[#171717] border border-[#2B2B2B] text-[#ECE8E1] font-sans text-xs rounded-control shadow-floating",
-          descriptionClassName: "text-[#9E9A94]",
+          style: {
+            background: '#171717',
+            border: '1px solid #2B2B2B',
+            color: '#ECE8E1',
+            fontFamily: 'sans-serif',
+            fontSize: '12px',
+            borderRadius: '4px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          }
         }}
       />
     </>

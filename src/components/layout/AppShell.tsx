@@ -8,10 +8,12 @@ import { PanelResizer } from './PanelResizer';
 import { MapContainer } from '@/components/map/MapContainer';
 import { MapControls } from '@/components/map/MapControls';
 import { MapSearch } from '@/components/map/MapSearch';
+import { MapSelectionOverlay } from '@/components/map/MapSelectionOverlay';
 import { MapLegend } from '@/components/map/MapLegend';
 import { MapTooltip } from '@/components/map/MapTooltip';
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { LayerInspector } from '@/components/layers/LayerInspector';
+import { AIChatbot } from './AIChatbot';
 
 interface AppShellProps {
   onBackToLanding?: () => void;
@@ -44,6 +46,7 @@ export function AppShell({ onBackToLanding }: AppShellProps) {
             <MapContainer />
             <MapControls />
             <MapSearch />
+            <MapSelectionOverlay />
             <MapLegend />
             <MapTooltip />
           </main>
@@ -64,6 +67,7 @@ export function AppShell({ onBackToLanding }: AppShellProps) {
       </div>
 
       <CommandPalette />
+      <AIChatbot />
     </div>
   );
 }

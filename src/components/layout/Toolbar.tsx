@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon } from 'lucide-react';
+import { PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon, Bot } from 'lucide-react';
 import { Button, IconButton, Select } from '@/components/ui';
 import { useUIStore } from '@/stores/ui-store';
 import { useMapStore } from '@/stores/map-store';
@@ -16,10 +16,12 @@ export function Toolbar({ onLogoClick }: ToolbarProps) {
   const leftPanelOpen = useUIStore((s) => s.leftPanelOpen);
   const rightPanelOpen = useUIStore((s) => s.rightPanelOpen);
   const bottomDrawerOpen = useUIStore((s) => s.bottomDrawerOpen);
+  const isChatOpen = useUIStore((s) => s.isChatOpen);
 
   const toggleLeft = useUIStore((s) => s.toggleLeftPanel);
   const toggleRight = useUIStore((s) => s.toggleRightPanel);
   const toggleBottom = useUIStore((s) => s.toggleBottomDrawer);
+  const toggleChat = useUIStore((s) => s.toggleChat);
 
   const activeStyle = useMapStore((s) => s.mapStyle);
   const setMapStyle = useMapStore((s) => s.setMapStyle);
@@ -154,6 +156,19 @@ export function Toolbar({ onLogoClick }: ToolbarProps) {
           )}
         >
           <PanelRight size={16} />
+        </IconButton>
+        <IconButton
+          variant="ghost"
+          onClick={toggleChat}
+          title="Toggle AI Assistant"
+          className={cn(
+            "w-8 h-8 flex items-center justify-center rounded-control transition-colors cursor-pointer",
+            isChatOpen
+              ? "bg-bg-active text-[#C8A46A]"
+              : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+          )}
+        >
+          <Bot size={16} />
         </IconButton>
       </div>
     </header>
