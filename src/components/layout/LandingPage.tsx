@@ -11,6 +11,7 @@ interface LandingPageProps {
 export function LandingPage({ onEnter }: LandingPageProps) {
   const imageSlides = ['Images/Geo1.png', 'Images/Geo2.png', 'Images/Geo3.png'];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -20,6 +21,15 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   }, [imageSlides.length]);
 
   const activeImage = `${import.meta.env.BASE_URL}${imageSlides[activeImageIndex]}`;
+
+  useEffect(() => {
+    setImageLoaded(false);
+    const img = new Image();
+    img.src = activeImage;
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageLoaded(true);
+  }, [activeImage]);
+
   const viewportLabel =
     imageSlides[activeImageIndex] === 'Images/Geo1.png'
       ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP'
@@ -28,9 +38,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
   const fadeUpProps = {
-    initial: { opacity: 0, y: 12 },
+    initial: { opacity: 0, y: 14 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.35, ease: "easeInOut" as const }
+    transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const }
   };
 
   const capabilities = [
@@ -114,7 +124,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
             <motion.div 
               {...fadeUpProps}
-              transition={{ ...fadeUpProps.transition, delay: 0.1 }}
+              transition={{ ...fadeUpProps.transition, delay: 0.04 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 z-10 w-full"
             >
               <button
@@ -133,16 +143,16 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
             {/* Suspended Instrument Plate (Large Format Slideshow) */}
             <motion.div 
-              initial={{ opacity: 0, y: 30, scale: 0.995 }}
+              initial={{ opacity: 0, y: 24, scale: 0.995 }}
               animate={{ 
                 opacity: 1, 
-                y: [0, -6, 0],
+                y: [0, -4, 0],
                 scale: 1
               }}
               transition={{ 
-                opacity: { duration: 0.6, ease: "easeOut", delay: 0.2 },
-                scale: { duration: 0.6, ease: "easeOut", delay: 0.2 },
-                y: { repeat: Infinity, duration: 8, ease: "easeInOut" }
+                opacity: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
+                scale: { duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.06 },
+                y: { repeat: Infinity, duration: 10, ease: "easeInOut" }
               }}
               className="w-full max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
               onClick={onEnter}
@@ -161,7 +171,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   {imageSlides.map((image) => (
                     <div
                       key={image}
-                      className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${imageSlides[activeImageIndex] === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
                     />
                   ))}
                 </div>
@@ -173,9 +183,10 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   key={activeImage}
                   src={activeImage}
                   alt="TerraFathom Workspace Viewport"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  onLoad={() => setImageLoaded(true)}
+                  initial={{ opacity: 0, scale: 1.01 }}
+                  animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.01 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full h-auto object-cover select-none"
                 />
                 
