@@ -40,6 +40,8 @@ export function AIChatbot() {
     }
   }, [apiKey]);
 
+  const hasKeyConfigured = Boolean(apiKey);
+
   // Auto-scroll chat window to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,8 +51,7 @@ export function AIChatbot() {
     e.preventDefault();
     if (!inputMsg.trim()) return;
     if (!apiKey) {
-      toast.error('Please enter a valid Gemini API Key in the chat settings.');
-      setShowConfig(true);
+      toast.error('No API key is available. Enter your Gemini API key in the settings panel if you need to use the chat.');
       return;
     }
 
@@ -253,7 +254,9 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
                 TerraFathom AI
               </div>
               <div className="text-text-secondary leading-relaxed pl-0 bg-transparent">
-                Hello! Ask me spatial queries about your loaded layers and coordinates.
+                {hasKeyConfigured
+                  ? 'Hello! Ask me spatial queries about your loaded layers and coordinates.'
+                  : 'Enter your Gemini API key in the settings panel if you want to use chat.'}
               </div>
             </div>
 
