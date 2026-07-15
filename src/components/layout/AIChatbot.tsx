@@ -218,7 +218,7 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
         <div className="flex-1 min-h-0 flex flex-col gap-2.5 animate-fade-in px-2">
           
           {/* Scroll Area containing log output */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-3 border border-border-primary/20 bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 border border-border-primary bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">
             {/* Initial welcome message */}
             <div className="space-y-0.5 text-xs">
               <div className="text-[9px] uppercase tracking-wider font-semibold text-[#C8A46A]">

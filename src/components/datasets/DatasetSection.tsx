@@ -94,10 +94,10 @@ export function DatasetSection({ dataset, layers, defaultExpanded = true }: Data
 
   return (
     <section className={cn(
-      'mb-3 last:mb-0 border rounded-lg overflow-hidden transition-all duration-300',
+      'mb-3 last:mb-0 border border-border-primary rounded-lg overflow-hidden transition-all duration-300',
       isDatasetSelected 
-        ? 'bg-bg-tertiary/10 border-border-primary' 
-        : 'bg-bg-tertiary/5 border-border-primary/20 hover:border-border-primary/45'
+        ? 'bg-bg-tertiary/10' 
+        : 'bg-bg-tertiary/5 hover:bg-bg-tertiary/8'
     )}>
       <div className="group/dataset relative">
         <div
