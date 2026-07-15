@@ -31,14 +31,60 @@ export function MapSearch() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
+  // Debounced search query autocomplete
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    // Skip autocomplete fetch if the input query exactly matches a selected result
+    const isSelected = results.some((r) => r.display_name === query);
+    if (isSelected) return;
+
+    const delayDebounceFn = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          query
+        )}&format=json&limit=5`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Accept-Language': 'en',
+            'User-Agent': 'TerraFathom-GIS-Workspace'
+          }
+        });
+
+        if (response.ok) {
+          const data = (await response.json()) as GeocodeResult[];
+          setResults(data);
+          setIsOpen(true);
+        }
+      } catch (err) {
+        // Quietly absorb geocoding autocomplete network errors
+      } finally {
+        setLoading(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query]);
+
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
+    // If suggestions are already loaded, fly to the top matching result
+    if (results.length > 0) {
+      handleSelectLocation(results[0]);
+      return;
+    }
+
+    // Force an immediate geocode look up if no results are cached yet
     setLoading(true);
     setIsOpen(true);
     try {
-      // Nominatim search API
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
         query
       )}&format=json&limit=5`;
@@ -46,7 +92,6 @@ export function MapSearch() {
       const response = await fetch(url, {
         headers: {
           'Accept-Language': 'en',
-          // Nominatim usage policy recommends setting a User-Agent
           'User-Agent': 'TerraFathom-GIS-Workspace'
         }
       });
@@ -57,6 +102,11 @@ export function MapSearch() {
 
       const data = (await response.json()) as GeocodeResult[];
       setResults(data);
+      if (data.length > 0) {
+        handleSelectLocation(data[0]);
+      } else {
+        toast.error('No locations found');
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Search failed';
       toast.error(msg);
