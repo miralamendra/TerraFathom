@@ -141,6 +141,21 @@ export function DataTable() {
       {/* Grid Container */}
       <div className="flex-1 overflow-auto min-h-0 scrollbar-thin">
         <table className="w-full border-collapse text-left table-fixed">
+          <colgroup>
+            {headers.map((header: string) => {
+              const numeric = isNumeric(header);
+              return (
+                <col
+                  key={header}
+                  style={{
+                    width: numeric ? '110px' : 'minmax(140px, 1fr)',
+                    minWidth: numeric ? '90px' : '140px',
+                    maxWidth: numeric ? '140px' : '320px',
+                  }}
+                />
+              );
+            })}
+          </colgroup>
           <thead className="sticky top-0 bg-bg-tertiary z-10">
             <tr className="h-8">
               {headers.map((header: string, idx: number) => {
@@ -151,14 +166,13 @@ export function DataTable() {
                     key={header}
                     onClick={() => handleHeaderClick(header)}
                     className={cn(
-                      "px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-tertiary select-none cursor-pointer bg-bg-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors border-b border-border-primary",
+                      "px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-tertiary select-none cursor-pointer bg-bg-tertiary hover:bg-bg-hover hover:text-text-primary transition-colors border-b border-border-primary overflow-hidden",
                       numeric ? "text-right" : "text-left",
                       isFirst ? "sticky left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.05)]" : ""
                     )}
-                    style={{ minWidth: isFirst ? '150px' : '120px' }}
                   >
                     <div className={cn("flex items-center gap-1.5", numeric ? "justify-end" : "justify-start")}>
-                      <span>{header}</span>
+                      <span className="truncate block min-w-0" title={header}>{header}</span>
                       {sortField === header && (
                         <span className="text-accent shrink-0">
                           {sortDirection === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -180,7 +194,7 @@ export function DataTable() {
                   data-row-id={recordId}
                   onClick={() => {
                     setSelectedRowIndex(recordId);
-                    
+
                     let lat: number | undefined;
                     let lng: number | undefined;
 
@@ -215,8 +229,8 @@ export function DataTable() {
                   }}
                   className={cn(
                     "h-8 transition-colors duration-100 cursor-pointer select-none",
-                    isSelected 
-                      ? "bg-bg-active text-text-primary" 
+                    isSelected
+                      ? "bg-bg-active text-text-primary"
                       : "bg-transparent hover:bg-bg-hover"
                   )}
                 >
@@ -224,19 +238,19 @@ export function DataTable() {
                     const rawVal = record[header];
                     const numeric = isNumeric(header);
                     const isFirst = idx === 0;
+                    const display = formatCellValue(rawVal, header);
                     return (
                       <td
                         key={header}
                         className={cn(
-                          "px-3 truncate text-text-primary font-normal text-xs border-b border-border-primary",
+                          "px-3 truncate text-text-primary font-normal text-xs border-b border-border-primary overflow-hidden",
                           numeric ? "text-right font-mono tabular-nums" : "text-left font-sans",
                           isFirst ? "sticky left-0 bg-inherit z-0" : "",
                           rawVal === null || rawVal === undefined ? "text-text-tertiary" : ""
                         )}
-                        style={{ maxWidth: '200px' }}
-                        title={formatCellValue(rawVal, header)}
+                        title={display}
                       >
-                        {formatCellValue(rawVal, header)}
+                        {display}
                       </td>
                     );
                   })}
