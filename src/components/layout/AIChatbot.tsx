@@ -219,34 +219,41 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
           {/* Scroll Area containing log output */}
           <div className="h-[250px] overflow-y-auto p-3 border border-border-primary bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">
             {/* Initial welcome message */}
-            <div className="text-text-tertiary leading-relaxed text-xs">
-              <span className="font-semibold text-[#C8A46A] mr-1.5 font-mono select-all">TF_AI:</span>
-              Hello! Ask me spatial queries about your loaded layers and coordinates.
+            <div className="space-y-0.5 text-xs">
+              <div className="text-[9px] uppercase tracking-wider font-semibold text-[#C8A46A]">
+                TerraFathom AI
+              </div>
+              <div className="text-text-secondary leading-relaxed pl-0 bg-transparent">
+                Hello! Ask me spatial queries about your loaded layers and coordinates.
+              </div>
             </div>
 
             {/* Conversational transcript elements */}
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className="leading-relaxed text-xs">
-                {msg.role === 'model' ? (
-                  <div className="text-text-secondary">
-                    <span className="font-semibold text-[#C8A46A] mr-1.5 font-mono select-all">TF_AI:</span>
-                    {renderMessageContent(msg.parts[0].text)}
-                  </div>
-                ) : (
-                  <div className="text-text-primary">
-                    <span className="font-semibold text-text-tertiary mr-1.5 font-mono select-all">USER:</span>
-                    {msg.parts[0].text}
-                  </div>
-                )}
+              <div key={idx} className="space-y-0.5 animate-fade-in text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[9px] uppercase tracking-wider font-semibold ${
+                    msg.role === 'model' ? 'text-[#C8A46A]' : 'text-text-tertiary'
+                  }`}>
+                    {msg.role === 'model' ? 'TerraFathom AI' : 'Consultant'}
+                  </span>
+                </div>
+                <div className="text-text-secondary leading-relaxed">
+                  {msg.role === 'model' ? renderMessageContent(msg.parts[0].text) : msg.parts[0].text}
+                </div>
               </div>
             ))}
 
             {/* Think Loading placeholder */}
             {isChatLoading && (
-              <div className="flex items-center gap-1.5 text-xs text-text-tertiary leading-relaxed">
-                <span className="font-semibold text-[#C8A46A] font-mono">TF_AI:</span>
-                <Loader2 size={10} className="animate-spin text-[#C8A46A]" />
-                <span className="italic font-light">Analyzing viewport parameters...</span>
+              <div className="space-y-0.5 text-xs animate-pulse">
+                <div className="text-[9px] uppercase tracking-wider font-semibold text-[#C8A46A]">
+                  TerraFathom AI
+                </div>
+                <div className="flex items-center gap-1.5 text-text-tertiary">
+                  <Loader2 size={10} className="animate-spin text-[#C8A46A]" />
+                  <span className="italic font-light">Analyzing viewport parameters...</span>
+                </div>
               </div>
             )}
             <div ref={chatEndRef} />
