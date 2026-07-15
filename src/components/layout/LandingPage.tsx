@@ -118,7 +118,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         <div className="w-full max-w-[1280px] mx-auto px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer" onClick={onEnter}>
             <TerraFathomLogo size={20} />
-            <span className="font-sans text-[14px] md:text-[15px] font-bold tracking-[0.12em] text-[#ECE8E1] normal-case">
+            <span className="font-sans text-[14px] md:text-[15px] font-semibold text-[#ECE8E1] normal-case">
               TerraFathom
             </span>
           </div>
