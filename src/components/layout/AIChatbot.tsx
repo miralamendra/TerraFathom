@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Key, Trash2, Loader2, Send, ChevronUp, ChevronRight } from 'lucide-react';
+import { Key, Trash2, Loader2, Send, ChevronDown, ChevronRight } from 'lucide-react';
 import { useUIStore } from '@/stores/ui-store';
 import { useDataStore } from '@/stores/data-store';
 import { useMapStore } from '@/stores/map-store';
@@ -139,15 +139,15 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
   };
 
   return (
-    <div className="flex flex-col gap-2 mt-2 px-1 select-none font-sans text-xs">
+    <div className="flex flex-col gap-2 mt-2 select-none font-sans text-xs">
       
       {/* Section Header */}
       <div 
         onClick={toggleChat}
-        className="flex items-center justify-between h-6 cursor-pointer"
+        className="flex items-center justify-between h-6 cursor-pointer mb-1 px-2 select-none"
       >
         <div className="flex items-center gap-1.5">
-          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary" /> : <ChevronRight size={12} className="text-text-tertiary" />}
+          {isChatOpen ? <ChevronDown size={12} className="text-text-tertiary" /> : <ChevronRight size={12} className="text-text-tertiary" />}
           <span className="text-[13px] font-semibold text-text-primary tracking-tight">
             TerraFathom AI
           </span>
@@ -171,7 +171,7 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
 
       {/* Settings configuration panel */}
       {isChatOpen && showConfig && (
-        <div className="bg-[#171717]/80 p-2.5 border border-border-primary/50 rounded-control flex flex-col gap-2 shrink-0 animate-fade-in">
+        <div className="mx-2 bg-[#171717]/80 p-2.5 border border-border-primary/50 rounded-control flex flex-col gap-2 shrink-0 animate-fade-in">
           <div>
             <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase tracking-wider">
               Gemini API Key
@@ -215,7 +215,7 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
 
       {/* Expanded Transcript Chatbox */}
       {isChatOpen && (
-        <div className="flex flex-col gap-2.5 animate-fade-in">
+        <div className="flex flex-col gap-2.5 animate-fade-in px-2">
           
           {/* Scroll Area containing log output */}
           <div className="h-[250px] overflow-y-auto p-3 border border-border-primary bg-bg-tertiary/10 rounded-control space-y-3.5 flex flex-col scrollbar-thin">

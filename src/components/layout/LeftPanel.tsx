@@ -212,7 +212,7 @@ export function LeftPanel() {
       </ScrollArea>
 
       {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
-      <div className="border-t border-border-primary shrink-0 bg-bg-secondary/40 pb-3">
+      <div className="border-t border-border-primary shrink-0 bg-bg-secondary/40 px-3 pb-3">
         <AIChatbot />
       </div>
     </aside>
