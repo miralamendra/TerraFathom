@@ -10,6 +10,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onEnter }: LandingPageProps) {
   const imageSlides = ['Geo1.png', 'Geo2.png', 'Geo3.png'];
+  const baseImagePath = `${import.meta.env.BASE_URL}Images/`;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [displayedImageIndex, setDisplayedImageIndex] = useState(0);
@@ -23,8 +24,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     return () => window.clearInterval(timer);
   }, [activeImageIndex, imageSlides.length]);
 
-  const activeImage = `${import.meta.env.BASE_URL}Images/${imageSlides[activeImageIndex]}`;
-  const previousImage = `${import.meta.env.BASE_URL}Images/${imageSlides[displayedImageIndex]}`;
+  const activeImage = `${baseImagePath}${imageSlides[activeImageIndex]}`;
+  const previousImage = `${baseImagePath}${imageSlides[displayedImageIndex]}`;
 
   useEffect(() => {
     setImageLoaded(false);
