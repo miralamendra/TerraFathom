@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Database, Plus, UploadCloud } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { useRef, useState, useEffect } from 'react';
+import { AIChatbot } from './AIChatbot';
 
 export function LeftPanel() {
   const open = useUIStore((s) => s.leftPanelOpen);
@@ -183,6 +184,9 @@ export function LeftPanel() {
               })}
             </div>
           </div>
+
+          {/* AI Chatbot */}
+          <AIChatbot />
         </div>
       </ScrollArea>
     </aside>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Key, Trash2, Loader2 } from 'lucide-react';
+import { Bot, Key, Trash2, Loader2, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import { useUIStore } from '@/stores/ui-store';
 import { useDataStore } from '@/stores/data-store';
 import { useMapStore } from '@/stores/map-store';
@@ -18,8 +18,6 @@ export function AIChatbot() {
   const clearChatHistory = useUIStore((s) => s.clearChatHistory);
   const isChatLoading = useUIStore((s) => s.isChatLoading);
   const setChatLoading = useUIStore((s) => s.setChatLoading);
-  const bottomOpen = useUIStore((s) => s.bottomDrawerOpen);
-  const bottomHeight = useUIStore((s) => s.bottomDrawerHeight);
 
   const datasets = useDataStore((s) => s.datasets);
   const mapState = useMapStore.getState();
@@ -133,117 +131,94 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
 
     return (
       <div 
-        className="space-y-1.5 text-xs text-text-secondary leading-relaxed break-words"
+        className="space-y-1 text-xs text-text-secondary leading-relaxed break-words"
         dangerouslySetInnerHTML={{ __html: html.replace(/\n/g, '<br />') }}
       />
     );
   };
 
-  const bottomOffset = bottomOpen ? bottomHeight + 16 : 16;
-
   return (
-    <>
-      {/* Floating Toggle Button */}
-      <button
-        type="button"
-        onClick={toggleChat}
-        style={{ bottom: bottomOffset }}
-        className={`absolute right-4 z-30 w-8 h-8 rounded-full shadow-floating flex items-center justify-center cursor-pointer transition-all active:scale-95 border border-border-primary bg-bg-elevated text-[#C8A46A] hover:bg-bg-hover hover:text-text-primary ${
-          isChatOpen ? 'bg-bg-active border-[#C8A46A]/50' : ''
-        }`}
-        title="TerraFathom AI Assistant"
-      >
-        <Bot size={16} />
-      </button>
+    <div className="flex flex-col gap-2 mt-4 px-2 select-none">
+      
+      {/* Section Header */}
+      <div className="flex items-center justify-between h-6 border-b border-border-primary/30 pb-2">
+        <div className="flex items-center gap-1.5 cursor-pointer" onClick={toggleChat}>
+          <Bot size={13} className="text-[#C8A46A]" />
+          <span className="text-[13px] font-semibold text-text-primary tracking-tight">
+            AI Assistant
+          </span>
+          {isChatOpen ? <ChevronUp size={12} className="text-text-tertiary" /> : <ChevronDown size={12} className="text-text-tertiary" />}
+        </div>
+        
+        {isChatOpen && (
+          <button
+            type="button"
+            onClick={() => setShowConfig(!showConfig)}
+            title="Configure settings"
+            className="w-5 h-5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <Key size={11} />
+          </button>
+        )}
+      </div>
 
-      {/* Floating Chat Dialog */}
-      {isChatOpen && (
-        <div 
-          style={{ bottom: bottomOffset + 40 }}
-          className="absolute right-4 w-80 md:w-96 h-[460px] bg-bg-secondary border border-border-primary rounded-control shadow-floating flex flex-col z-35 backdrop-blur-md select-none overflow-hidden"
-        >
-          {/* Dialog Header */}
-          <div className="h-12 border-b border-border-primary px-4 flex items-center justify-between shrink-0 bg-bg-secondary">
-            <div className="flex items-center gap-2">
-              <Bot size={15} className="text-[#C8A46A]" />
-              <span className="font-semibold text-[10px] tracking-wider text-text-primary uppercase">
-                TerraFathom AI Assistant
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowConfig(!showConfig)}
-                title="Configure API key / Model"
-                className="text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-              >
-                <Key size={13} />
-              </button>
-              <button
-                type="button"
-                onClick={toggleChat}
-                className="text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-              >
-                <X size={14} />
-              </button>
-            </div>
+      {/* Configurations panel */}
+      {isChatOpen && showConfig && (
+        <div className="bg-[#171717] p-2.5 border border-border-primary/50 rounded-control flex flex-col gap-2 shrink-0">
+          <div>
+            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase">
+              Gemini API Key
+            </label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Paste API Key..."
+              className="w-full h-7 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
+            />
           </div>
+          <div>
+            <label className="text-[9px] font-semibold text-text-tertiary block mb-1 uppercase">
+              Model
+            </label>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="w-full h-7 px-2 bg-[#111111] border border-[#2B2B2B] rounded-control text-xs text-text-primary outline-none cursor-pointer"
+            >
+              <option value="gemini-2.5-flash">Gemma 4 31B (gemini-2.5-flash)</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemma-2-27b-it">Gemma 2 27B</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              clearChatHistory();
+              toast.success('Conversation history reset');
+            }}
+            className="h-6 border border-[#2B2B2B] hover:bg-[#2B2B2B]/20 text-[10px] font-medium rounded-control flex items-center justify-center gap-1 cursor-pointer text-red-400"
+          >
+            <Trash2 size={11} />
+            <span>Reset History</span>
+          </button>
+        </div>
+      )}
 
-          {/* Configurations panel */}
-          {showConfig && (
-            <div className="bg-[#171717]/95 p-3 border-b border-border-primary flex flex-col gap-3 shrink-0">
-              <div>
-                <label className="text-[9px] font-medium text-text-tertiary block mb-1 uppercase">
-                  Gemini API Key
-                </label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Paste AI API Key..."
-                  className="w-full h-8 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
-                />
-              </div>
-              <div>
-                <label className="text-[9px] font-medium text-text-tertiary block mb-1 uppercase">
-                  Model Selection
-                </label>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full h-8 px-2 bg-[#111111] border border-[#2B2B2B] rounded-control text-xs text-text-primary outline-none cursor-pointer"
-                >
-                  <option value="gemini-2.5-flash">Gemma 4 31B (gemini-2.5-flash)</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                  <option value="gemma-2-27b-it">Gemma 2 27B</option>
-                </select>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  clearChatHistory();
-                  toast.success('Conversation history reset');
-                }}
-                className="h-7 border border-[#2B2B2B] hover:bg-[#2B2B2B]/20 text-[10px] font-medium rounded-control flex items-center justify-center gap-1.5 cursor-pointer text-red-400"
-              >
-                <Trash2 size={12} />
-                <span>Reset History</span>
-              </button>
-            </div>
-          )}
-
+      {/* Expanded Chat Drawer */}
+      {isChatOpen && (
+        <div className="flex flex-col gap-2">
           {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-bg-secondary">
-            {/* Initial message */}
+          <div className="h-[250px] overflow-y-auto p-2 border border-border-primary/50 bg-[#171717]/40 rounded-control space-y-3 flex flex-col">
+            {/* Initial welcome message */}
             <div className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0">
-                <Bot size={12} className="text-[#C8A46A]" />
+              <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Bot size={11} className="text-[#C8A46A]" />
               </div>
               <div className="flex-1">
-                <div className="text-[9px] text-text-tertiary font-mono mb-0.5">TerraFathom AI</div>
-                <div className="text-xs text-text-secondary leading-relaxed bg-[#171717] border border-[#2B2B2B]/50 p-2.5 rounded-control shadow-tight">
-                  Hello! I am TerraFathom AI. I have access to your active map viewport coordinates and all loaded datasets. Ask me details about this workspace!
+                <div className="text-xs text-text-secondary leading-relaxed bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40">
+                  Hello! Ask me spatial queries about your loaded layers and coordinates.
                 </div>
               </div>
             </div>
@@ -253,20 +228,18 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
               <div key={idx} className="flex gap-2">
                 {msg.role === 'model' ? (
                   <>
-                    <div className="w-6 h-6 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0">
-                      <Bot size={12} className="text-[#C8A46A]" />
+                    <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot size={11} className="text-[#C8A46A]" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-[9px] text-text-tertiary font-mono mb-0.5">TerraFathom AI</div>
-                      <div className="bg-[#171717] border border-[#2B2B2B]/50 p-2.5 rounded-control shadow-tight">
+                      <div className="bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40">
                         {renderMessageContent(msg.parts[0].text)}
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex flex-col items-end pl-8">
-                    <div className="text-[9px] text-text-tertiary font-mono mb-0.5">User</div>
-                    <div className="bg-[#ECE8E1] text-[#111111] p-2.5 rounded-control shadow-tight text-xs font-normal">
+                  <div className="flex-1 flex flex-col items-end pl-6">
+                    <div className="bg-[#ECE8E1] text-[#111111] p-2 rounded text-xs font-normal">
                       {msg.parts[0].text}
                     </div>
                   </div>
@@ -277,13 +250,12 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
             {/* Loading placeholder */}
             {isChatLoading && (
               <div className="flex gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0">
-                  <Bot size={12} className="text-[#C8A46A]" />
+                <div className="w-5 h-5 rounded-full bg-[#C8A46A]/10 border border-[#C8A46A]/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <Bot size={11} className="text-[#C8A46A]" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[9px] text-text-tertiary font-mono mb-0.5">TerraFathom AI</div>
-                  <div className="bg-[#171717] border border-[#2B2B2B]/50 p-2.5 rounded-control shadow-tight flex items-center gap-2 text-xs text-text-tertiary">
-                    <Loader2 size={11} className="animate-spin text-[#C8A46A]" />
+                  <div className="bg-[#171717]/80 p-2 rounded border border-[#2B2B2B]/40 flex items-center gap-1.5 text-xs text-text-tertiary">
+                    <Loader2 size={10} className="animate-spin text-[#C8A46A]" />
                     <span>Thinking...</span>
                   </div>
                 </div>
@@ -292,30 +264,27 @@ Answer user queries with extreme conciseness and geographic accuracy. Use bullet
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input Form */}
-          <form 
-            onSubmit={handleSend}
-            className="h-14 border-t border-border-primary px-3 flex items-center gap-2 shrink-0 bg-bg-secondary"
-          >
+          {/* Chat Form */}
+          <form onSubmit={handleSend} className="flex gap-1.5 shrink-0">
             <input
               type="text"
               value={inputMsg}
               disabled={isChatLoading}
               onChange={(e) => setInputMsg(e.target.value)}
-              placeholder="Ask AI details about this map..."
-              className="flex-1 h-9 px-3 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
+              placeholder="Ask AI details..."
+              className="flex-1 h-8 px-2 bg-[#111111] border border-border-primary rounded-control text-xs text-text-primary placeholder:text-text-tertiary outline-none focus:border-[#C8A46A]/50"
             />
             <button
               type="submit"
               disabled={isChatLoading || !inputMsg.trim()}
-              className="w-9 h-9 bg-[#ECE8E1] text-[#111111] disabled:opacity-30 disabled:cursor-not-allowed rounded-control flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0"
+              className="w-8 h-8 bg-[#ECE8E1] text-[#111111] disabled:opacity-30 disabled:cursor-not-allowed rounded-control flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0"
             >
-              <Send size={13} />
+              <Send size={11} />
             </button>
           </form>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

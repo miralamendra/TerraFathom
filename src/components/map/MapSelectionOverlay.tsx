@@ -83,6 +83,7 @@ export function MapSelectionOverlay() {
         strokeColor: [43, 43, 43],
         strokeWidth: 1,
         opacity: 0.8,
+        blendMode: 'normal',
       });
 
       // Focus on new dataset layers

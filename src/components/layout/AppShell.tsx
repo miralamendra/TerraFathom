@@ -13,7 +13,6 @@ import { MapLegend } from '@/components/map/MapLegend';
 import { MapTooltip } from '@/components/map/MapTooltip';
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { LayerInspector } from '@/components/layers/LayerInspector';
-import { AIChatbot } from './AIChatbot';
 
 interface AppShellProps {
   onBackToLanding?: () => void;
@@ -67,7 +66,6 @@ export function AppShell({ onBackToLanding }: AppShellProps) {
       </div>
 
       <CommandPalette />
-      <AIChatbot />
     </div>
   );
 }
