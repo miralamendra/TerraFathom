@@ -50,9 +50,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
       transitionTimeoutRef.current = window.setTimeout(() => {
         setCurrentImageIndex(nextIndex);
         currentImageIndexRef.current = nextIndex;
-        setNextImageIndex(nextIndex);
         setIsTransitioning(false);
-      }, 220);
+      }, 450);
     }, 5000);
 
     return () => {
@@ -180,16 +179,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             {/* Suspended Instrument Plate (Large Format Slideshow) */}
             <motion.div 
               initial={{ opacity: 0, y: 8, scale: 0.998 }}
-              animate={{ 
-                opacity: 1, 
-                y: [0, -2, 0],
-                scale: 1
-              }}
-              transition={{ 
-                opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 },
-                scale: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 },
-                y: { repeat: Infinity, duration: 12, ease: "easeInOut" }
-              }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ opacity: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 }, scale: { duration: 0.16, ease: [0.22, 1, 0.36, 1], delay: 0.02 } }}
               className="w-full max-w-[1000px] mx-auto mt-10 md:mt-16 bg-[#171717] border border-[#2B2B2B] rounded-lg p-2.5 shadow-[0_32px_64px_rgba(0,0,0,0.85)] relative group cursor-pointer hover:border-[#C8A46A]/60 transition-colors duration-500 overflow-hidden"
               onClick={onEnter}
             >
@@ -214,7 +205,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
-              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center aspect-[16/10]">
+              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
                 <motion.img
                   src={currentImage}
                   alt="TerraFathom Workspace Viewport"
@@ -223,8 +214,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   fetchPriority="high"
                   initial={false}
                   animate={{ opacity: isTransitioning ? 0 : 1 }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
+                  transition={{ duration: 0.45, ease: 'easeInOut' }}
+                  className="w-full h-auto object-contain select-none"
                 />
                 <motion.img
                   src={nextImage}
@@ -234,8 +225,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   fetchPriority="high"
                   initial={false}
                   animate={{ opacity: isTransitioning ? 1 : 0 }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 w-full h-full object-cover select-none"
+                  transition={{ duration: 0.45, ease: 'easeInOut' }}
+                  className="absolute inset-0 w-full h-full object-contain select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
