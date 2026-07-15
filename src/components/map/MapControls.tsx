@@ -1,7 +1,7 @@
 import { Plus, Minus, Maximize, Box } from 'lucide-react';
 import { useMapStore } from '@/stores/map-store';
 import { useDataStore } from '@/stores/data-store';
-import { getViewportForBounds } from '@/core/map/viewport';
+import { getViewportForDataset } from '@/core/map/viewport';
 import { cn } from '@/components/ui/utils';
 
 export function MapControls() {
@@ -20,8 +20,8 @@ export function MapControls() {
   const handleZoomOut = () => animateViewport({ zoom: zoom - 0.5 }, 300);
 
   const handleFitToData = () => {
-    if (selectedDataset && selectedDataset.bounds) {
-      const newVp = getViewportForBounds(selectedDataset.bounds);
+    if (selectedDataset) {
+      const newVp = getViewportForDataset(selectedDataset);
       animateViewport({
         longitude: newVp.longitude,
         latitude: newVp.latitude,

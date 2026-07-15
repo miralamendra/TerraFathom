@@ -206,59 +206,37 @@ export function AnimationPlayer() {
   };
 
   return (
-    <div className="h-full flex flex-col justify-between px-6 py-4 bg-bg-secondary select-none">
-      {/* Symmetrical Settings & Digital Display Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 items-end gap-4 shrink-0 pb-3 border-b border-border-primary border-opacity-30">
-        {/* Col 1: Animation Column Select */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] text-text-tertiary font-bold uppercase tracking-widest">Animation Column</span>
+    <div className="h-full flex flex-col px-3 py-2.5 bg-bg-secondary select-none text-text-primary">
+      <div className="flex flex-wrap items-center gap-1.5 shrink-0 pb-1.5">
+        <Select
+          className="h-7 text-[11px] min-w-[140px] flex-1"
+          value={timeField || ''}
+          onChange={(e) => setTimeField(e.target.value || null)}
+          options={[{ value: '', label: 'Column' }, ...animatableFields.map((f) => ({ value: f.name, label: f.name }))]}
+        />
+
+        {timeField ? (
           <Select
-            className="h-8 text-xs font-semibold bg-bg-tertiary border-border-primary"
-            value={timeField || ''}
-            onChange={(e) => setTimeField(e.target.value || null)}
-            options={[{ value: '', label: 'Select column...' }, ...animatableFields.map((f) => ({ value: f.name, label: `${f.name} (${f.type})` }))]}
+            className="h-7 text-[11px] min-w-[110px] flex-1"
+            value={activeWindowOption}
+            onChange={(e) => handleWindowChange(e.target.value)}
+            options={getWindowOptions()}
           />
-        </div>
+        ) : null}
 
-        {/* Col 2: Tail/Window Select */}
-        <div className="flex flex-col gap-1.5">
-          {timeField ? (
-            <div className="flex flex-col gap-1.5 animate-fade-in">
-              <span className="text-[10px] text-text-tertiary font-bold uppercase tracking-widest">Window / Tail Size</span>
-              <Select
-                className="h-8 text-xs font-semibold bg-bg-tertiary border-border-primary"
-                value={activeWindowOption}
-                onChange={(e) => handleWindowChange(e.target.value)}
-                options={getWindowOptions()}
-              />
-            </div>
-          ) : (
-            <div className="h-14" /> // Empty placeholder to preserve alignment
-          )}
-        </div>
-
-        {/* Col 3: Digital Time Display */}
-        <div className="flex flex-col items-end gap-1.5 justify-end h-full">
-          {timeField && timeRange ? (
-            <div className="flex flex-col items-end gap-1 font-mono pr-1 animate-fade-in select-all">
-              <span className="text-[10px] text-text-tertiary font-bold uppercase tracking-widest select-none">Current Value</span>
-              <span className="text-sm font-bold text-accent tracking-wide">{formatCurrentValue()}</span>
-            </div>
-          ) : (
-            <div className="h-14" />
-          )}
-        </div>
+        {timeField && timeRange ? (
+          <div className="ml-auto rounded-md border border-border-primary/35 bg-bg-tertiary/35 px-2 py-1 font-mono text-[10px] leading-none text-text-secondary">
+            {formatCurrentValue()}
+          </div>
+        ) : null}
       </div>
 
-      {/* Main Playback Control Center */}
       {timeField && timeRange ? (
-        <div className="flex-1 flex flex-col justify-end gap-4 mt-3">
-          {/* Progress Timeline Slider Track */}
-          <div className="flex flex-col gap-1.5">
-            {/* Distribution sparkline graph */}
+        <div className="flex-1 flex flex-col gap-0 mt-0 min-h-0">
+          <div className="flex-1 min-w-0 p-0 flex flex-col justify-end">
             {bins.length > 0 && (
-              <div className="h-10 w-full flex items-end gap-[1px] px-1 relative select-none">
-                <div className="absolute inset-x-0 bottom-0 h-px bg-border-primary opacity-20" />
+              <div className="h-10 w-full flex items-end gap-[1px] px-0 relative select-none rounded-sm bg-transparent">
+                <div className="absolute inset-x-0 bottom-0 h-px bg-border-primary/30" />
                 {bins.map((bin, i) => {
                   const isActive = bin.binStart <= currentTime;
                   return (
@@ -267,28 +245,25 @@ export function AnimationPlayer() {
                       className="flex-1 rounded-t-[1px] transition-all duration-300"
                       style={{
                         height: `${Math.max(4, bin.heightPercent)}%`,
-                        backgroundColor: isActive ? 'var(--accent)' : 'var(--color-border-primary)',
-                        opacity: isActive ? 0.75 : 0.2,
+                        backgroundColor: isActive ? '#ffffff' : 'rgba(255,255,255,0.22)',
+                        opacity: isActive ? 1 : 0.75,
                       }}
                     />
                   );
                 })}
                 <div
-                  className="absolute top-0 bottom-0 w-px bg-text-primary shadow-glow transition-all duration-75 pointer-events-none"
+                  className="absolute top-0 bottom-0 w-px bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.3)] transition-all duration-75 pointer-events-none"
                   style={{ left: `${progressPercent}%` }}
                 />
               </div>
             )}
 
-            <div className="relative group/timeline w-full flex items-center h-5">
-              {/* Timeline Track Background */}
-              <div className="absolute inset-x-0 h-1 rounded bg-bg-tertiary border border-border-primary border-opacity-30 pointer-events-none" />
-              {/* Active Progress Fill */}
+            <div className="relative group/timeline w-full flex items-center h-3 mt-0 mb-0">
+              <div className="absolute inset-x-0 h-1 rounded-full bg-bg-secondary border border-border-primary/40 pointer-events-none" />
               <div
-                className="absolute left-0 h-1 rounded bg-accent pointer-events-none transition-all duration-75"
+                className="absolute left-0 h-1 rounded-full bg-text-secondary/70 pointer-events-none transition-all duration-75"
                 style={{ width: `${progressPercent}%` }}
               />
-              {/* Native Invisible Range Input Overlaid */}
               <input
                 type="range"
                 min={min}
@@ -298,96 +273,70 @@ export function AnimationPlayer() {
                 onChange={(e) => setCurrentTime(parseFloat(e.target.value))}
                 className="w-full h-full opacity-0 cursor-pointer relative z-10"
               />
-              {/* Custom floating handle */}
               <div
-                className="absolute w-3 h-3 rounded-full bg-text-primary shadow-floating border border-border-primary pointer-events-none transform -translate-x-1/2 scale-100 group-hover/timeline:scale-125 transition-transform duration-100 ease-out"
+                className="absolute w-3 h-3 rounded-full bg-text-primary border border-border-primary shadow-sm pointer-events-none transform -translate-x-1/2 transition-transform duration-100 ease-out"
                 style={{ left: `${progressPercent}%` }}
               />
             </div>
-            
-            {/* Timeline min/max limits */}
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] text-text-tertiary font-mono">
-                {selectedFieldStats?.type === 'timestamp'
-                  ? new Date(min).toLocaleDateString()
-                  : min.toFixed(1)}
-              </span>
-              <span className="text-[10px] text-text-tertiary font-mono">
-                {selectedFieldStats?.type === 'timestamp'
-                  ? new Date(max).toLocaleDateString()
-                  : max.toFixed(1)}
-              </span>
-            </div>
+
           </div>
 
-          {/* Action Bar: Controls, Loop, Speed */}
-          <div className="grid grid-cols-3 items-center pt-2">
-            {/* Col 1: Playback Buttons */}
-            <div className="flex items-center gap-2">
-              {/* Reset to Start */}
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-none border-0 bg-transparent p-0 pt-1">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setCurrentTime(min)}
-                className="w-8 h-8 flex items-center justify-center rounded-control bg-bg-tertiary text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors cursor-pointer border border-border-primary border-opacity-60"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-bg-secondary/80 text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-active transition-colors cursor-pointer border border-border-primary/60"
                 title="Reset to start"
               >
                 <RotateCcw size={13} />
               </button>
 
-              {/* Play / Pause */}
               <button
                 type="button"
                 onClick={() => setPlaying(!isPlaying)}
                 className={cn(
-                  'w-9 h-9 flex items-center justify-center rounded-full transition-all cursor-pointer shadow-tight transform active:scale-95 border',
+                  'w-8 h-8 flex items-center justify-center rounded-full transition-all cursor-pointer shadow-[0_0_0_1px_rgba(255,255,255,0.04)] transform active:scale-95 border',
                   isPlaying
                     ? 'bg-bg-active border-border-focus text-text-primary'
-                    : 'bg-accent border-accent/20 text-text-inverse hover:scale-105'
+                    : 'bg-bg-secondary/90 border-border-primary/60 text-text-primary hover:bg-bg-hover'
                 )}
                 title={isPlaying ? 'Pause' : 'Play'}
               >
-                {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} className="ml-0.5" fill="currentColor" />}
+                {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} className="ml-0.5" fill="currentColor" />}
               </button>
 
-              {/* Loop Toggle */}
               <button
                 type="button"
                 onClick={() => setLoop(!loop)}
                 className={cn(
-                  'w-8 h-8 flex items-center justify-center rounded-control transition-colors cursor-pointer border',
+                  'w-7 h-7 flex items-center justify-center rounded-md transition-colors cursor-pointer border',
                   loop
-                    ? 'bg-accent/10 border-accent/20 text-accent font-bold'
-                    : 'bg-bg-tertiary border-border-primary border-opacity-60 text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                    ? 'bg-bg-active border-border-focus text-text-primary font-semibold'
+                    : 'bg-bg-secondary/80 border-border-primary/60 text-text-secondary hover:text-text-primary hover:bg-bg-hover'
                 )}
                 title={loop ? 'Disable looping' : 'Enable looping'}
               >
-                <Repeat size={13} className={loop ? 'text-accent' : ''} />
+                <Repeat size={13} className={loop ? 'text-text-primary' : ''} />
               </button>
             </div>
 
-            {/* Col 2: Center Spacer */}
-            <div />
-
-            {/* Col 3: Speed Segmented Control */}
-            <div className="flex items-center gap-3 justify-end">
-              <span className="text-[10px] text-text-tertiary font-bold uppercase tracking-wider">Speed</span>
-              <div className="flex gap-0.5 bg-bg-tertiary rounded-control p-0.5 border border-border-primary border-opacity-60">
-                {([0.5, 1, 2, 5, 10] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSpeed(s)}
-                    className={cn(
-                      'px-2.5 py-1 rounded-[4px] text-[10px] font-semibold transition-colors cursor-pointer',
-                      speed === s
-                        ? 'bg-accent text-text-inverse'
-                        : 'text-text-secondary hover:text-text-primary'
-                    )}
-                  >
-                    {s}x
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-center gap-1">
+              {([0.5, 1, 2, 5, 10] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSpeed(s)}
+                  className={cn(
+                    'px-1.5 py-1 rounded-[5px] text-[9px] font-semibold transition-colors cursor-pointer border',
+                    speed === s
+                      ? 'bg-bg-active text-text-primary border-border-focus'
+                      : 'bg-bg-secondary/70 text-text-secondary border-transparent hover:text-text-primary hover:bg-bg-hover'
+                  )}
+                >
+                  {s}x
+                </button>
+              ))}
             </div>
           </div>
         </div>

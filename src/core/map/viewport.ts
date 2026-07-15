@@ -61,3 +61,48 @@ export function getViewportForBounds(
 
   return { longitude, latitude, zoom };
 }
+
+export interface DatasetViewportHint {
+  name?: string;
+  bounds?: [number, number, number, number] | null;
+}
+
+export function getViewportForDataset(
+  dataset: DatasetViewportHint | null | undefined
+): { longitude: number; latitude: number; zoom: number; pitch: number; bearing: number } {
+  const name = dataset?.name?.toLowerCase() ?? '';
+  const bounds = dataset?.bounds ?? null;
+
+  const isNYC = /nyc|new york|manhattan/i.test(name) || !!(bounds && (
+    (bounds[0] <= -72.2 && bounds[2] >= -74.8 && bounds[1] >= 40.2 && bounds[3] <= 41.2)
+  ));
+
+  if (isNYC) {
+    return {
+      longitude: -73.97755351753737,
+      latitude: 40.739516322561585,
+      zoom: 12.092072468526053,
+      pitch: 56.012527487172655,
+      bearing: -15.25,
+    };
+  }
+
+  if (!bounds) {
+    return {
+      longitude: -73.935242,
+      latitude: 40.73061,
+      zoom: 11,
+      pitch: 50,
+      bearing: 25,
+    };
+  }
+
+  const fit = getViewportForBounds(bounds);
+  return {
+    longitude: fit.longitude,
+    latitude: fit.latitude,
+    zoom: fit.zoom + 2.2,
+    pitch: 50,
+    bearing: 25,
+  };
+}

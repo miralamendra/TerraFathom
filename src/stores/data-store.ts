@@ -6,7 +6,7 @@ import { useLayerStore } from './layer-store';
 import { useFilterStore } from './filter-store';
 import { useAnimationStore } from './animation-store';
 import { getCompatibleLayers } from '@/core/layers/layer-registry';
-import { getViewportForBounds } from '@/core/map/viewport';
+import { getViewportForDataset } from '@/core/map/viewport';
 
 interface DataState {
   datasets: Record<string, ProcessedDataset>;
@@ -102,19 +102,18 @@ export const useDataStore = create<DataState>((set, get) => ({
 
     if (id) {
       const dataset = get().datasets[id];
-      if (dataset && dataset.bounds) {
-        const newVp = getViewportForBounds(dataset.bounds);
-        const targetZoom = newVp.zoom + 2.2;
+      if (dataset) {
+        const newVp = getViewportForDataset(dataset);
         const drawerOpen = useUIStore.getState().bottomDrawerOpen;
         // Shift map camera further south to push visual elements higher up (north) out of bottom drawer's way
-        const latOffset = drawerOpen ? (42 / Math.pow(2, targetZoom)) : 0;
+        const latOffset = drawerOpen ? (42 / Math.pow(2, newVp.zoom)) : 0;
 
         useMapStore.getState().animateViewport({
           longitude: newVp.longitude,
           latitude: newVp.latitude - latOffset,
-          zoom: targetZoom,
-          pitch: 50,
-          bearing: 25,
+          zoom: newVp.zoom,
+          pitch: newVp.pitch,
+          bearing: newVp.bearing,
         }, 1500);
       }
     }
