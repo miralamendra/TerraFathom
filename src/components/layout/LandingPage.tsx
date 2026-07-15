@@ -205,7 +205,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
-              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
+              <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center w-full max-w-[960px] mx-auto aspect-[16/10]">
                 <motion.img
                   src={currentImage}
                   alt="TerraFathom Workspace Viewport"
@@ -213,9 +213,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   decoding="async"
                   fetchPriority="high"
                   initial={false}
-                  animate={{ opacity: isTransitioning ? 0 : 1 }}
-                  transition={{ duration: 0.45, ease: 'easeInOut' }}
-                  className="w-full h-auto object-contain select-none"
+                  animate={{ opacity: isTransitioning ? 0 : 1, scale: isTransitioning ? 0.985 : 1 }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
                 />
                 <motion.img
                   src={nextImage}
@@ -224,9 +224,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   decoding="async"
                   fetchPriority="high"
                   initial={false}
-                  animate={{ opacity: isTransitioning ? 1 : 0 }}
-                  transition={{ duration: 0.45, ease: 'easeInOut' }}
-                  className="absolute inset-0 w-full h-full object-contain select-none"
+                  animate={{ opacity: isTransitioning ? 1 : 0, scale: isTransitioning ? 1 : 0.985 }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full object-cover select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
