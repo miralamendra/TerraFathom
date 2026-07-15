@@ -9,16 +9,23 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onEnter }: LandingPageProps) {
-  const [activeImage, setActiveImage] = useState<string>('/Images/Geo1.png');
+  const imageSlides = ['Images/Geo1.png', 'Images/Geo2.png', 'Images/Geo3.png'];
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveImage((prev) => 
-        prev === '/Images/Geo1.png' ? '/Images/Geo2.png' : '/Images/Geo1.png'
-      );
+    const timer = window.setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % imageSlides.length);
     }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+    return () => window.clearInterval(timer);
+  }, [imageSlides.length]);
+
+  const activeImage = `${import.meta.env.BASE_URL}${imageSlides[activeImageIndex]}`;
+  const viewportLabel =
+    imageSlides[activeImageIndex] === 'Images/Geo1.png'
+      ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP'
+      : imageSlides[activeImageIndex] === 'Images/Geo2.png'
+        ? 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'
+        : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
   const fadeUpProps = {
     initial: { opacity: 0, y: 12 },
@@ -148,31 +155,28 @@ export function LandingPage({ onEnter }: LandingPageProps) {
                   <div className="w-1.5 h-1.5 rounded-full bg-[#2B2B2B]" />
                 </div>
                 <span className="font-mono text-[8px] tracking-[0.2em] text-[#9E9A94]/40 uppercase select-none">
-                  {activeImage === '/Images/Geo1.png' ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP' : 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'}
+                  {viewportLabel}
                 </span>
                 <div className="flex items-center gap-1">
-                  <div className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === '/Images/Geo1.png' ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`} />
-                  <div className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === '/Images/Geo2.png' ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`} />
+                  {imageSlides.map((image) => (
+                    <div
+                      key={image}
+                      className={`w-1 h-1 rounded-full transition-all duration-300 ${activeImage === image ? 'bg-[#C8A46A]' : 'bg-[#2B2B2B]'}`}
+                    />
+                  ))}
                 </div>
               </div>
 
               {/* Viewport Frame with Specular Glass Glare and seamless crossfade */}
               <div className="relative rounded overflow-hidden bg-[#111111] flex items-center justify-center">
-                {/* Base Viewport Image */}
-                <img 
-                  src="/Images/Geo1.png" 
-                  alt="TerraFathom Workspace Viewport Surface" 
-                  className="w-full h-auto object-cover select-none"
-                />
-                
-                {/* Overlay Viewport Image (fades in/out smoothly over the base) */}
-                <motion.img 
-                  src="/Images/Geo2.png" 
-                  alt="TerraFathom Workspace Viewport Heatmap" 
+                <motion.img
+                  key={activeImage}
+                  src={activeImage}
+                  alt="TerraFathom Workspace Viewport"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: activeImage === '/Images/Geo2.png' ? 1 : 0 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                  className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, ease: 'easeInOut' }}
+                  className="w-full h-auto object-cover select-none"
                 />
                 
                 {/* Apple Specular Diagonal Reflection */}
