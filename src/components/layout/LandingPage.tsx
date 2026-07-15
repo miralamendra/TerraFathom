@@ -9,7 +9,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onEnter }: LandingPageProps) {
-  const imageSlides = ['Images/Geo1.png', 'Images/Geo2.png', 'Images/Geo3.png'];
+  const imageSlides = ['/Images/Geo1.png', '/Images/Geo2.png', '/Images/Geo3.png'];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [displayedImageIndex, setDisplayedImageIndex] = useState(0);
@@ -23,8 +23,8 @@ export function LandingPage({ onEnter }: LandingPageProps) {
     return () => window.clearInterval(timer);
   }, [activeImageIndex, imageSlides.length]);
 
-  const activeImage = `${import.meta.env.BASE_URL}${imageSlides[activeImageIndex]}`;
-  const previousImage = `${import.meta.env.BASE_URL}${imageSlides[displayedImageIndex]}`;
+  const activeImage = imageSlides[activeImageIndex];
+  const previousImage = imageSlides[displayedImageIndex];
 
   useEffect(() => {
     setImageLoaded(false);
@@ -35,9 +35,9 @@ export function LandingPage({ onEnter }: LandingPageProps) {
   }, [activeImage]);
 
   const viewportLabel =
-    imageSlides[activeImageIndex] === 'Images/Geo1.png'
+    imageSlides[activeImageIndex] === '/Images/Geo1.png'
       ? 'TERRAFATHOM_VIEWPORT_01 // SURFACE_MAP'
-      : imageSlides[activeImageIndex] === 'Images/Geo2.png'
+      : imageSlides[activeImageIndex] === '/Images/Geo2.png'
         ? 'TERRAFATHOM_VIEWPORT_02 // HEATMAP_ANALYSIS'
         : 'TERRAFATHOM_VIEWPORT_03 // GEOMETRY_SCAN';
   
