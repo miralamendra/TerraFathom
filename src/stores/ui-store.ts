@@ -75,14 +75,13 @@ const getWindowWidth35Percent = (): number => {
   return Math.max(380, Math.min(800, Math.round(winWidth * 0.35)));
 };
 
-const initialTab = getStorageValue<'ai' | 'workspace'>('leftPanelActiveTab', 'ai');
-const initialLeftWidth = initialTab === 'ai' ? getWindowWidth35Percent() : 340;
+const initialLeftWidth = getWindowWidth35Percent();
 
 export const useUIStore = create<UIState>((set) => ({
-  leftPanelOpen: getStorageValue('leftPanelOpen', true),
+  leftPanelOpen: true, // Always unfolded AI Assistant by default on website load
   rightPanelOpen: getStorageValue('rightPanelOpen', false),
-  bottomDrawerOpen: getStorageValue('bottomDrawerOpen', false),
-  leftPanelWidth: initialLeftWidth,
+  bottomDrawerOpen: false, // Data table closed by default on page load
+  leftPanelWidth: initialLeftWidth, // Workspace and AI Assistant use identical 35% width
   rightPanelWidth: getStorageValue('rightPanelWidth', 320),
   bottomDrawerHeight: getStorageValue('bottomDrawerHeight', 240),
   selectedLayerId: null,
@@ -141,7 +140,7 @@ export const useUIStore = create<UIState>((set) => ({
   setSelectedDatasetId: (id: string | null) =>
     set(() => ({
       selectedDatasetId: id,
-      bottomDrawerOpen: id !== null ? true : getStorageValue('bottomDrawerOpen', false),
+      // Do not automatically force open the bottom data table drawer on dataset load
     })),
 
   setSelectedRowIndex: (index: number | null) =>
@@ -167,7 +166,7 @@ export const useUIStore = create<UIState>((set) => ({
   chatHistory: [],
   isChatLoading: false,
   isChatOpen: true,
-  leftPanelActiveTab: initialTab,
+  leftPanelActiveTab: 'ai', // Default to AI Assistant tab on startup
 
   setSelectionMode: (mode) => set(() => ({ selectionMode: mode })),
   setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
@@ -186,11 +185,11 @@ export const useUIStore = create<UIState>((set) => ({
   setChatLoading: (loading) => set(() => ({ isChatLoading: loading })),
   toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
   
-  // Dynamic Tab Width Switcher: 35% window width for AI Chat tab, default 340px for Workspace tab
+  // Tab Switcher: Maintains identical 35% screen width for both Workspace and AI tabs
   setLeftPanelActiveTab: (tab) => {
     setStorageValue('leftPanelActiveTab', tab);
     set(() => {
-      const targetWidth = tab === 'ai' ? getWindowWidth35Percent() : 340;
+      const targetWidth = getWindowWidth35Percent();
       setStorageValue('leftPanelWidth', targetWidth);
       return {
         leftPanelActiveTab: tab,
