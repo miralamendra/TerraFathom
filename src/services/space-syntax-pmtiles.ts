@@ -198,7 +198,8 @@ export function loadSpaceSyntaxPMTilesLayer(
       : '500.geojson';
 
     const localUrl = `${origin}${cleanBase}data/${fileName}`;
-    const gzUrl = `${origin}${cleanBase}data/${fileName}.gz`;
+    const fastRegionalGzUrl = `${origin}${cleanBase}data/space-syntax-regional.geojson.gz`;
+    const fullGzUrl = `${origin}${cleanBase}data/${fileName}.gz`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -248,8 +249,24 @@ export function loadSpaceSyntaxPMTilesLayer(
       map.addLayer(layerSpec);
     };
 
-    const loadDataset = async () => {
-      // 1. Try local dev raw file
+    const fetchAndDecompressBlob = async (url: string): Promise<string | null> => {
+      try {
+        const res = await fetch(url);
+        if (res.ok && res.body && typeof DecompressionStream !== 'undefined') {
+          const ds = new DecompressionStream('gzip');
+          const decompressed = res.body.pipeThrough(ds);
+          const jsonText = await new Response(decompressed).text();
+          const blob = new Blob([jsonText], { type: 'application/json' });
+          return URL.createObjectURL(blob);
+        }
+      } catch (e) {
+        console.error('Failed to fetch/decompress:', url, e);
+      }
+      return null;
+    };
+
+    const loadDatasetProgressive = async () => {
+      // Step A: Local dev server raw file (instant on localhost)
       try {
         const res = await fetch(localUrl, { method: 'HEAD' });
         if (res.ok) {
@@ -257,34 +274,26 @@ export function loadSpaceSyntaxPMTilesLayer(
           return;
         }
       } catch (e) {
-        // Continue to .gz
+        // Fallback to web progressive loading
       }
 
-      // 2. Try decompressed .gz stream on GitHub Pages with Blob URL
-      try {
-        const gzRes = await fetch(gzUrl);
-        if (gzRes.ok && gzRes.body) {
-          if (typeof DecompressionStream !== 'undefined') {
-            const ds = new DecompressionStream('gzip');
-            const decompressed = gzRes.body.pipeThrough(ds);
-            const jsonText = await new Response(decompressed).text();
-            
-            // Create Blob URL for zero-copy high performance Web Worker streaming
-            const blob = new Blob([jsonText], { type: 'application/json' });
-            const blobUrl = URL.createObjectURL(blob);
-            renderGeoJSON(blobUrl);
-            return;
-          }
+      // Step B: Instant 1.97MB Regional Network (< 0.5 sec load on GitHub Pages)
+      const fastBlobUrl = await fetchAndDecompressBlob(fastRegionalGzUrl);
+      if (fastBlobUrl) {
+        renderGeoJSON(fastBlobUrl);
+      } else {
+        renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
+      }
+
+      // Step C: Progressive background upgrade to 100% full detail dataset
+      fetchAndDecompressBlob(fullGzUrl).then((fullBlobUrl) => {
+        if (fullBlobUrl && map) {
+          renderGeoJSON(fullBlobUrl);
         }
-      } catch (e) {
-        console.error('Compressed dataset load error:', e);
-      }
-
-      // 3. Guaranteed instant sample fallback
-      renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
+      }).catch(() => {});
     };
 
-    loadDataset();
+    loadDatasetProgressive();
   };
 
   if (map.isStyleLoaded()) {
