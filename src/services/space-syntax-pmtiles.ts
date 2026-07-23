@@ -204,8 +204,6 @@ export function loadSpaceSyntaxPMTilesLayer(
 ): void {
   if (!map) return;
 
-  registerPMTilesProtocol();
-
   const sourceId = 'space-syntax-pmtiles-source';
   const layerId = 'space-syntax-pmtiles-layer';
 
@@ -222,11 +220,12 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    const pmtilesFileName = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
-      ? 'space-syntax-10k.pmtiles'
-      : 'space-syntax-500.pmtiles';
+    const fileName = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
+      ? '10km.geojson'
+      : '500.geojson';
 
-    const pmtilesUrl = `${origin}${cleanBase}data/${pmtilesFileName}`;
+    const gzUrl = `${origin}${cleanBase}data/${fileName}.gz`;
+    const rawUrl = `${origin}${cleanBase}data/${fileName}`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -236,39 +235,97 @@ export function loadSpaceSyntaxPMTilesLayer(
     const strokeWidth = configOverrides?.strokeWidth ?? 1.0;
     const opacity = configOverrides?.opacity ?? 1.0;
 
-    map.addSource(sourceId, {
-      type: 'vector',
-      url: `pmtiles://${pmtilesUrl}`,
-    });
+    const renderGeoJSON = (dataOrUrl: any) => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
 
-    const layerSpec: maplibregl.LayerSpecification = {
-      id: layerId,
-      type: 'line',
-      source: sourceId,
-      'source-layer': 'space_syntax',
-      layout: {
-        'line-cap': 'butt',
-        'line-join': 'miter',
-        'line-miter-limit': 3,
-        visibility: 'visible',
-      },
-      paint: {
-        'line-width': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          9, Math.max(0.75, strokeWidth * 0.75),
-          12, Math.max(1.25, strokeWidth * 1.25),
-          15, Math.max(2.5, strokeWidth * 2.5),
-          18, Math.max(4.5, strokeWidth * 4.5)
-        ],
-        'line-color': colorRamp as any,
-        'line-opacity': opacity,
-        'line-blur': 0,
-      },
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: dataOrUrl,
+        tolerance: 0.2,
+        buffer: 64,
+      });
+
+      const layerSpec: maplibregl.LayerSpecification = {
+        id: layerId,
+        type: 'line',
+        source: sourceId,
+        layout: {
+          'line-cap': 'butt',
+          'line-join': 'miter',
+          'line-miter-limit': 3,
+          visibility: 'visible',
+        },
+        paint: {
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            9, Math.max(0.75, strokeWidth * 0.75),
+            12, Math.max(1.25, strokeWidth * 1.25),
+            15, Math.max(2.5, strokeWidth * 2.5),
+            18, Math.max(4.5, strokeWidth * 4.5)
+          ],
+          'line-color': colorRamp as any,
+          'line-opacity': opacity,
+          'line-blur': 0,
+        },
+      };
+
+      map.addLayer(layerSpec);
     };
 
-    map.addLayer(layerSpec);
+    const fetchAndDecompressBlob = async (url: string): Promise<string | null> => {
+      if (datasetBlobCache[url]) {
+        return datasetBlobCache[url];
+      }
+      try {
+        const res = await fetch(url);
+        if (res.ok && res.body && typeof DecompressionStream !== 'undefined') {
+          const ds = new DecompressionStream('gzip');
+          const decompressed = res.body.pipeThrough(ds);
+          const jsonText = await new Response(decompressed).text();
+          const blob = new Blob([jsonText], { type: 'application/json' });
+          const blobUrl = URL.createObjectURL(blob);
+          datasetBlobCache[url] = blobUrl;
+          return blobUrl;
+        }
+      } catch (e) {
+        console.error('Failed to fetch/decompress dataset:', url, e);
+      }
+      return null;
+    };
+
+    const loadDataset = async () => {
+      // 1. Check in-memory prefetch cache
+      if (datasetBlobCache[gzUrl]) {
+        renderGeoJSON(datasetBlobCache[gzUrl]);
+        return;
+      }
+
+      // 2. Try fetching & decompressing 9.5MB gzipped file directly
+      const blobUrl = await fetchAndDecompressBlob(gzUrl);
+      if (blobUrl) {
+        renderGeoJSON(blobUrl);
+        return;
+      }
+
+      // 3. Dev server fallback to raw JSON
+      try {
+        const res = await fetch(rawUrl, { method: 'HEAD' });
+        if (res.ok) {
+          renderGeoJSON(rawUrl);
+          return;
+        }
+      } catch (e) {
+        // Fallback
+      }
+
+      // 4. Sample fallback if all else fails
+      renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
+    };
+
+    loadDataset();
   };
 
   if (map.isStyleLoaded()) {
