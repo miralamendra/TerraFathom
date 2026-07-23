@@ -193,10 +193,8 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    // High-definition vector source with 100% reliable display
-    const dataUrl = (metric.includes('500') || metric.includes('BtA500'))
-      ? `${origin}${cleanBase}data/500.geojson`
-      : `${origin}${cleanBase}pmtiles/regional_through_movement.geojson`;
+    // Committed lightweight dataset URL (100% reliable on GitHub Pages and production static hosting)
+    const dataUrl = `${origin}${cleanBase}data/space-syntax-sample.json`;
 
     map.addSource(sourceId, {
       type: 'geojson',

@@ -24,7 +24,7 @@ interface UIState {
   setCommandPaletteOpen: (open: boolean) => void;
   setRightPanelOpen: (open: boolean) => void;
 
-  // New features: drawing selection and AI chat
+  // Features: drawing selection and AI chat
   selectionMode: 'none' | 'point' | 'rectangle' | 'freehand';
   selectionCoordinates: [number, number][];
   geminiApiKey: string;
@@ -70,20 +70,18 @@ const getInitialApiKey = (): string => {
   return storedKey || envApiKey || 'Cvl015afU0purMg6UPY9P7KKrHCppJnA';
 };
 
-const getWindowWidth35Percent = (): number => {
+const getWindowWidth30Percent = (): number => {
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1400;
-  return Math.max(380, Math.min(800, Math.round(winWidth * 0.35)));
+  return Math.max(340, Math.min(500, Math.round(winWidth * 0.30)));
 };
 
-const initialLeftWidth = getWindowWidth35Percent();
-
 export const useUIStore = create<UIState>((set) => ({
-  leftPanelOpen: true, // Always unfolded AI Assistant by default on website load
-  rightPanelOpen: getStorageValue('rightPanelOpen', false),
+  leftPanelOpen: true, // ALWAYS unfolded AI Assistant by default on website load
+  rightPanelOpen: false,
   bottomDrawerOpen: false, // Data table closed by default on page load
-  leftPanelWidth: initialLeftWidth, // Workspace and AI Assistant use identical 35% width
-  rightPanelWidth: getStorageValue('rightPanelWidth', 320),
-  bottomDrawerHeight: getStorageValue('bottomDrawerHeight', 240),
+  leftPanelWidth: getWindowWidth30Percent(), // Crisp proportional sidebar width
+  rightPanelWidth: 320,
+  bottomDrawerHeight: 240,
   selectedLayerId: null,
   selectedDatasetId: null,
   commandPaletteOpen: false,
@@ -111,14 +109,14 @@ export const useUIStore = create<UIState>((set) => ({
 
   setLeftPanelWidth: (width: number) =>
     set(() => {
-      const clamped = Math.max(300, Math.min(1000, width));
+      const clamped = Math.max(300, Math.min(700, width));
       setStorageValue('leftPanelWidth', clamped);
       return { leftPanelWidth: clamped };
     }),
 
   setRightPanelWidth: (width: number) =>
     set(() => {
-      const clamped = Math.max(240, Math.min(600, width));
+      const clamped = Math.max(240, Math.min(500, width));
       setStorageValue('rightPanelWidth', clamped);
       return { rightPanelWidth: clamped };
     }),
@@ -140,7 +138,7 @@ export const useUIStore = create<UIState>((set) => ({
   setSelectedDatasetId: (id: string | null) =>
     set(() => ({
       selectedDatasetId: id,
-      // Do not automatically force open the bottom data table drawer on dataset load
+      // Do not force open the bottom drawer on dataset load
     })),
 
   setSelectedRowIndex: (index: number | null) =>
@@ -185,11 +183,11 @@ export const useUIStore = create<UIState>((set) => ({
   setChatLoading: (loading) => set(() => ({ isChatLoading: loading })),
   toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
   
-  // Tab Switcher: Maintains identical 35% screen width for both Workspace and AI tabs
+  // Tab Switcher: Maintains identical sleek sidebar width for both Workspace and AI tabs
   setLeftPanelActiveTab: (tab) => {
     setStorageValue('leftPanelActiveTab', tab);
     set(() => {
-      const targetWidth = getWindowWidth35Percent();
+      const targetWidth = getWindowWidth30Percent();
       setStorageValue('leftPanelWidth', targetWidth);
       return {
         leftPanelActiveTab: tab,
