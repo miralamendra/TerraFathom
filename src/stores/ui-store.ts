@@ -76,9 +76,9 @@ const getWindowWidth30Percent = (): number => {
 };
 
 export const useUIStore = create<UIState>((set) => ({
-  leftPanelOpen: true, // ALWAYS unfolded AI Assistant by default on website load
+  leftPanelOpen: true, // ALWAYS default unfolded on load, unaffected by stale localStorage
   rightPanelOpen: false,
-  bottomDrawerOpen: false, // Data table closed by default on page load
+  bottomDrawerOpen: false, // Data table drawer ALWAYS closed by default on page load
   leftPanelWidth: getWindowWidth30Percent(), // Crisp proportional sidebar width
   rightPanelWidth: 320,
   bottomDrawerHeight: 240,
@@ -87,25 +87,13 @@ export const useUIStore = create<UIState>((set) => ({
   commandPaletteOpen: false,
 
   toggleLeftPanel: () =>
-    set((state) => {
-      const next = !state.leftPanelOpen;
-      setStorageValue('leftPanelOpen', next);
-      return { leftPanelOpen: next };
-    }),
+    set((state) => ({ leftPanelOpen: !state.leftPanelOpen })),
 
   toggleRightPanel: () =>
-    set((state) => {
-      const next = !state.rightPanelOpen;
-      setStorageValue('rightPanelOpen', next);
-      return { rightPanelOpen: next };
-    }),
+    set((state) => ({ rightPanelOpen: !state.rightPanelOpen })),
 
   toggleBottomDrawer: () =>
-    set((state) => {
-      const next = !state.bottomDrawerOpen;
-      setStorageValue('bottomDrawerOpen', next);
-      return { bottomDrawerOpen: next };
-    }),
+    set((state) => ({ bottomDrawerOpen: !state.bottomDrawerOpen })),
 
   setLeftPanelWidth: (width: number) =>
     set(() => {
@@ -150,10 +138,7 @@ export const useUIStore = create<UIState>((set) => ({
     set(() => ({ commandPaletteOpen: open })),
 
   setRightPanelOpen: (open: boolean) => {
-    set(() => {
-      setStorageValue('rightPanelOpen', open);
-      return { rightPanelOpen: open };
-    });
+    set(() => ({ rightPanelOpen: open }));
   },
 
   // Selection & Chat Features
@@ -164,7 +149,7 @@ export const useUIStore = create<UIState>((set) => ({
   chatHistory: [],
   isChatLoading: false,
   isChatOpen: true,
-  leftPanelActiveTab: 'ai', // Default to AI Assistant tab on startup
+  leftPanelActiveTab: 'ai', // ALWAYS default to AI Assistant tab on startup
 
   setSelectionMode: (mode) => set(() => ({ selectionMode: mode })),
   setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
@@ -185,10 +170,8 @@ export const useUIStore = create<UIState>((set) => ({
   
   // Tab Switcher: Maintains identical sleek sidebar width for both Workspace and AI tabs
   setLeftPanelActiveTab: (tab) => {
-    setStorageValue('leftPanelActiveTab', tab);
     set(() => {
       const targetWidth = getWindowWidth30Percent();
-      setStorageValue('leftPanelWidth', targetWidth);
       return {
         leftPanelActiveTab: tab,
         leftPanelOpen: true,
