@@ -193,10 +193,13 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    const committedUrl = `${origin}${cleanBase}data/space-syntax-segments.geojson`;
-    const localUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
-      ? `${origin}${cleanBase}data/10km.geojson`
-      : `${origin}${cleanBase}data/500.geojson`;
+    const fileName = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
+      ? '10km.geojson'
+      : '500.geojson';
+
+    const localUrl = `${origin}${cleanBase}data/${fileName}`;
+    const hfCdnUrl = `https://huggingface.co/datasets/miralamendra/space-syntax-data/resolve/main/${fileName}`;
+    const ghReleaseCdnUrl = `https://github.com/miralamendra/TerraFathom/releases/download/v1.0.0/${fileName}`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -246,12 +249,21 @@ export function loadSpaceSyntaxPMTilesLayer(
       map.addLayer(layerSpec);
     };
 
+    // 1. Try local dev file -> 2. Try Hugging Face CDN -> 3. Try GitHub Release CDN
     fetch(localUrl, { method: 'HEAD' })
       .then((res) => {
-        addGeoJSONLayer(res.ok ? localUrl : committedUrl);
+        if (res.ok) {
+          addGeoJSONLayer(localUrl);
+        } else {
+          fetch(hfCdnUrl, { method: 'HEAD' })
+            .then((hfRes) => {
+              addGeoJSONLayer(hfRes.ok ? hfCdnUrl : ghReleaseCdnUrl);
+            })
+            .catch(() => addGeoJSONLayer(ghReleaseCdnUrl));
+        }
       })
       .catch(() => {
-        addGeoJSONLayer(committedUrl);
+        addGeoJSONLayer(hfCdnUrl);
       });
   };
 
