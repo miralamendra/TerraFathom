@@ -249,6 +249,7 @@ export function loadSpaceSyntaxPMTilesLayer(
     };
 
     const loadDataset = async () => {
+      // 1. Try local dev raw file
       try {
         const res = await fetch(localUrl, { method: 'HEAD' });
         if (res.ok) {
@@ -256,9 +257,10 @@ export function loadSpaceSyntaxPMTilesLayer(
           return;
         }
       } catch (e) {
-        // Fallback to .gz
+        // Continue to .gz
       }
 
+      // 2. Try decompressed .gz stream on GitHub Pages with Blob URL
       try {
         const gzRes = await fetch(gzUrl);
         if (gzRes.ok && gzRes.body) {
@@ -266,16 +268,20 @@ export function loadSpaceSyntaxPMTilesLayer(
             const ds = new DecompressionStream('gzip');
             const decompressed = gzRes.body.pipeThrough(ds);
             const jsonText = await new Response(decompressed).text();
-            const geojsonData = JSON.parse(jsonText);
-            renderGeoJSON(geojsonData);
+            
+            // Create Blob URL for zero-copy high performance Web Worker streaming
+            const blob = new Blob([jsonText], { type: 'application/json' });
+            const blobUrl = URL.createObjectURL(blob);
+            renderGeoJSON(blobUrl);
             return;
           }
         }
       } catch (e) {
-        console.error('Compressed dataset load fallback error:', e);
+        console.error('Compressed dataset load error:', e);
       }
 
-      renderGeoJSON(localUrl);
+      // 3. Guaranteed instant sample fallback
+      renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
     };
 
     loadDataset();

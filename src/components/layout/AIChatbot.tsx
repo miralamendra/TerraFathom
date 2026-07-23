@@ -218,7 +218,7 @@ const AssistantMessage = ({ text, onSelectCommand }: { text: string; onSelectCom
 };
 
 export function AIChatbot({ fullPanelMode = true }: AIChatbotProps) {
-  const apiKey = MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY || MISTRAL_API_KEY;
   const model = useUIStore((s) => s.selectedChatModel);
   const setModel = useUIStore((s) => s.setSelectedChatModel);
 
