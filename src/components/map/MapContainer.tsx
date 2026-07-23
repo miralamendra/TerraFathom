@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 
 import { setMapInstance } from '@/core/map/map-instance';
 import { registerPMTilesProtocol } from '@/services/space-syntax-pmtiles';
-import { loadSampleDataset } from '@/core/data/sample-data';
 
 // Register PMTiles protocol once using documented API
 registerPMTilesProtocol();
@@ -51,12 +50,6 @@ export function MapContainer() {
   const rightWidth = useUIStore((s) => s.rightPanelWidth);
   const bottomHeight = useUIStore((s) => s.bottomDrawerHeight);
 
-  // Auto-load default Space Syntax dataset on startup if no dataset is loaded
-  useEffect(() => {
-    if (datasetCount === 0) {
-      loadSampleDataset('sample-space-syntax-500m').catch(() => {});
-    }
-  }, [datasetCount]);
 
   // Auto-resize WebGL canvas when panels fold or resize for crisp native high-DPI rendering
   useEffect(() => {

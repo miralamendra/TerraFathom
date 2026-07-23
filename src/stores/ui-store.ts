@@ -141,7 +141,6 @@ export const useUIStore = create<UIState>((set) => ({
   setSelectedDatasetId: (id: string | null) =>
     set(() => ({
       selectedDatasetId: id,
-      bottomDrawerOpen: id !== null ? true : getStorageValue('bottomDrawerOpen', false),
     })),
 
   setSelectedRowIndex: (index: number | null) =>
