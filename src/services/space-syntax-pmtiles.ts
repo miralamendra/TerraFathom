@@ -176,7 +176,7 @@ export function prefetchSpaceSyntaxDatasets(): void {
   const origin = window.location.origin;
   const cleanBase = base.endsWith('/') ? base : `${base}/`;
 
-  const files = ['space-syntax-regional.geojson.gz', '500.geojson.gz', '10km.geojson.gz'];
+  const files = ['500.geojson.gz', '10km.geojson.gz'];
 
   files.forEach(async (file) => {
     const url = `${origin}${cleanBase}data/${file}`;
@@ -227,7 +227,6 @@ export function loadSpaceSyntaxPMTilesLayer(
       : '500.geojson';
 
     const localUrl = `${origin}${cleanBase}data/${fileName}`;
-    const fastRegionalGzUrl = `${origin}${cleanBase}data/space-syntax-regional.geojson.gz`;
     const fullGzUrl = `${origin}${cleanBase}data/${fileName}.gz`;
 
     const colorField = configOverrides?.colorField || metric;
@@ -299,7 +298,7 @@ export function loadSpaceSyntaxPMTilesLayer(
       return null;
     };
 
-    const loadDatasetBackgroundCached = async () => {
+    const loadDatasetCached = async () => {
       // Step A: Local dev server raw file (instant on localhost)
       try {
         const res = await fetch(localUrl, { method: 'HEAD' });
@@ -308,7 +307,7 @@ export function loadSpaceSyntaxPMTilesLayer(
           return;
         }
       } catch (e) {
-        // Fallback to web progressive loading
+        // Fallback to cached web load
       }
 
       // Step B: Check if full dataset is already pre-fetched in memory
@@ -317,27 +316,16 @@ export function loadSpaceSyntaxPMTilesLayer(
         return;
       }
 
-      // Step C: Check if fast regional dataset is pre-fetched
-      if (datasetBlobCache[fastRegionalGzUrl]) {
-        renderGeoJSON(datasetBlobCache[fastRegionalGzUrl]);
+      // Step C: Fetch full dataset directly into memory
+      const fullBlobUrl = await fetchAndDecompressBlob(fullGzUrl);
+      if (fullBlobUrl) {
+        renderGeoJSON(fullBlobUrl);
       } else {
-        const fastBlobUrl = await fetchAndDecompressBlob(fastRegionalGzUrl);
-        if (fastBlobUrl) {
-          renderGeoJSON(fastBlobUrl);
-        } else {
-          renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
-        }
+        renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
       }
-
-      // Step D: Ensure full dataset is loaded into memory in background
-      fetchAndDecompressBlob(fullGzUrl).then((fullBlobUrl) => {
-        if (fullBlobUrl && map) {
-          renderGeoJSON(fullBlobUrl);
-        }
-      }).catch(() => {});
     };
 
-    loadDatasetBackgroundCached();
+    loadDatasetCached();
   };
 
   if (map.isStyleLoaded()) {
