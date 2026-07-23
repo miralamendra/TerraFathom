@@ -193,11 +193,10 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    const geojsonUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
+    const committedUrl = `${origin}${cleanBase}data/space-syntax-segments.geojson`;
+    const localUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
       ? `${origin}${cleanBase}data/10km.geojson`
       : `${origin}${cleanBase}data/500.geojson`;
-
-    const pmtilesUrl = `pmtiles://${origin}${cleanBase}data/space-syntax.pmtiles`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -207,29 +206,21 @@ export function loadSpaceSyntaxPMTilesLayer(
     const strokeWidth = configOverrides?.strokeWidth ?? 1.0;
     const opacity = configOverrides?.opacity ?? 1.0;
 
-    const addLayerWithSource = (usePMTiles: boolean) => {
+    const addGeoJSONLayer = (urlToUse: string) => {
       if (map.getLayer(layerId)) map.removeLayer(layerId);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
 
-      if (usePMTiles) {
-        map.addSource(sourceId, {
-          type: 'vector',
-          url: pmtilesUrl,
-        });
-      } else {
-        map.addSource(sourceId, {
-          type: 'geojson',
-          data: geojsonUrl,
-          tolerance: 0.2,
-          buffer: 64,
-        });
-      }
+      map.addSource(sourceId, {
+        type: 'geojson',
+        data: urlToUse,
+        tolerance: 0.2,
+        buffer: 64,
+      });
 
       const layerSpec: maplibregl.LayerSpecification = {
         id: layerId,
         type: 'line',
         source: sourceId,
-        ...(usePMTiles ? { 'source-layer': 'space_syntax' } : {}),
         layout: {
           'line-cap': 'butt',
           'line-join': 'miter',
@@ -255,12 +246,12 @@ export function loadSpaceSyntaxPMTilesLayer(
       map.addLayer(layerSpec);
     };
 
-    fetch(geojsonUrl, { method: 'HEAD' })
+    fetch(localUrl, { method: 'HEAD' })
       .then((res) => {
-        addLayerWithSource(!res.ok);
+        addGeoJSONLayer(res.ok ? localUrl : committedUrl);
       })
       .catch(() => {
-        addLayerWithSource(true);
+        addGeoJSONLayer(committedUrl);
       });
   };
 
