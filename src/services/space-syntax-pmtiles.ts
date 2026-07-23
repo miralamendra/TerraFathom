@@ -198,7 +198,7 @@ export function loadSpaceSyntaxPMTilesLayer(
       : '500.geojson';
 
     const localUrl = `${origin}${cleanBase}data/${fileName}`;
-    const ghReleaseCdnUrl = `https://github.com/miralamendra/TerraFathom/releases/download/v1.0.0/${fileName}`;
+    const gzUrl = `${origin}${cleanBase}data/${fileName}.gz`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -208,13 +208,13 @@ export function loadSpaceSyntaxPMTilesLayer(
     const strokeWidth = configOverrides?.strokeWidth ?? 1.0;
     const opacity = configOverrides?.opacity ?? 1.0;
 
-    const addGeoJSONLayer = (urlToUse: string) => {
+    const renderGeoJSON = (dataOrUrl: any) => {
       if (map.getLayer(layerId)) map.removeLayer(layerId);
       if (map.getSource(sourceId)) map.removeSource(sourceId);
 
       map.addSource(sourceId, {
         type: 'geojson',
-        data: urlToUse,
+        data: dataOrUrl,
         tolerance: 0.2,
         buffer: 64,
       });
@@ -248,18 +248,37 @@ export function loadSpaceSyntaxPMTilesLayer(
       map.addLayer(layerSpec);
     };
 
-    // 1. Try local dev file -> 2. Try GitHub Release CDN
-    fetch(localUrl, { method: 'HEAD' })
-      .then((res) => {
+    const loadDataset = async () => {
+      try {
+        const res = await fetch(localUrl, { method: 'HEAD' });
         if (res.ok) {
-          addGeoJSONLayer(localUrl);
-        } else {
-          addGeoJSONLayer(ghReleaseCdnUrl);
+          renderGeoJSON(localUrl);
+          return;
         }
-      })
-      .catch(() => {
-        addGeoJSONLayer(ghReleaseCdnUrl);
-      });
+      } catch (e) {
+        // Fallback to .gz
+      }
+
+      try {
+        const gzRes = await fetch(gzUrl);
+        if (gzRes.ok && gzRes.body) {
+          if (typeof DecompressionStream !== 'undefined') {
+            const ds = new DecompressionStream('gzip');
+            const decompressed = gzRes.body.pipeThrough(ds);
+            const jsonText = await new Response(decompressed).text();
+            const geojsonData = JSON.parse(jsonText);
+            renderGeoJSON(geojsonData);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Compressed dataset load fallback error:', e);
+      }
+
+      renderGeoJSON(localUrl);
+    };
+
+    loadDataset();
   };
 
   if (map.isStyleLoaded()) {

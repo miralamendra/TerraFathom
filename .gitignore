@@ -46,8 +46,9 @@ public/data/*.geojson
 public/data/*.zip
 public/pmtiles/*.geojson
 
-# Allow lightweight Space Syntax committed GeoJSON & PMTiles
-!public/data/space-syntax-segments.geojson
+# Allow lightweight and gzipped Space Syntax datasets (<50MB)
+!public/data/500.geojson.gz
+!public/data/10km.geojson.gz
 !public/data/space-syntax.pmtiles
 !public/data/space-syntax-sample.json
 !public/data/space-syntax-manifest.json
