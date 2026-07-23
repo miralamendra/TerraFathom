@@ -79,7 +79,7 @@ const initialTab = getStorageValue<'ai' | 'workspace'>('leftPanelActiveTab', 'ai
 const initialLeftWidth = initialTab === 'ai' ? getWindowWidth35Percent() : 340;
 
 export const useUIStore = create<UIState>((set) => ({
-  leftPanelOpen: getStorageValue('leftPanelOpen', true),
+  leftPanelOpen: true,
   rightPanelOpen: getStorageValue('rightPanelOpen', false),
   bottomDrawerOpen: getStorageValue('bottomDrawerOpen', false),
   leftPanelWidth: initialLeftWidth,
