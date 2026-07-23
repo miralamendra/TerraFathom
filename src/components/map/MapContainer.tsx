@@ -399,6 +399,15 @@ export function MapContainer() {
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
       />
+
+      {/* Quiet, unboxed empty state nudge bottom-left */}
+      {datasetCount === 0 && (
+        <div className="absolute bottom-4 left-4 pointer-events-none z-20 animate-fade-in select-none">
+          <span className="text-[11px] font-medium text-text-tertiary">
+            Load a dataset to begin.
+          </span>
+        </div>
+      )}
     </div>
   );
 }

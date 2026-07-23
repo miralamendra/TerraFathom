@@ -24,7 +24,7 @@ interface UIState {
   setCommandPaletteOpen: (open: boolean) => void;
   setRightPanelOpen: (open: boolean) => void;
 
-  // Features: drawing selection and AI chat
+  // New features: drawing selection and AI chat
   selectionMode: 'none' | 'point' | 'rectangle' | 'freehand';
   selectionCoordinates: [number, number][];
   geminiApiKey: string;
@@ -70,41 +70,56 @@ const getInitialApiKey = (): string => {
   return storedKey || envApiKey || 'Cvl015afU0purMg6UPY9P7KKrHCppJnA';
 };
 
-const getWindowWidth30Percent = (): number => {
+const getWindowWidth35Percent = (): number => {
   const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1400;
-  return Math.max(340, Math.min(500, Math.round(winWidth * 0.30)));
+  return Math.max(380, Math.min(800, Math.round(winWidth * 0.35)));
 };
 
+const initialTab = getStorageValue<'ai' | 'workspace'>('leftPanelActiveTab', 'ai');
+const initialLeftWidth = initialTab === 'ai' ? getWindowWidth35Percent() : 340;
+
 export const useUIStore = create<UIState>((set) => ({
-  leftPanelOpen: true, // ALWAYS default unfolded on load, unaffected by stale localStorage
-  rightPanelOpen: false,
-  bottomDrawerOpen: false, // Data table drawer ALWAYS closed by default on page load
-  leftPanelWidth: getWindowWidth30Percent(), // Crisp proportional sidebar width
-  rightPanelWidth: 320,
-  bottomDrawerHeight: 240,
+  leftPanelOpen: getStorageValue('leftPanelOpen', true),
+  rightPanelOpen: getStorageValue('rightPanelOpen', false),
+  bottomDrawerOpen: getStorageValue('bottomDrawerOpen', false),
+  leftPanelWidth: initialLeftWidth,
+  rightPanelWidth: getStorageValue('rightPanelWidth', 320),
+  bottomDrawerHeight: getStorageValue('bottomDrawerHeight', 240),
   selectedLayerId: null,
   selectedDatasetId: null,
   commandPaletteOpen: false,
 
   toggleLeftPanel: () =>
-    set((state) => ({ leftPanelOpen: !state.leftPanelOpen })),
+    set((state) => {
+      const next = !state.leftPanelOpen;
+      setStorageValue('leftPanelOpen', next);
+      return { leftPanelOpen: next };
+    }),
 
   toggleRightPanel: () =>
-    set((state) => ({ rightPanelOpen: !state.rightPanelOpen })),
+    set((state) => {
+      const next = !state.rightPanelOpen;
+      setStorageValue('rightPanelOpen', next);
+      return { rightPanelOpen: next };
+    }),
 
   toggleBottomDrawer: () =>
-    set((state) => ({ bottomDrawerOpen: !state.bottomDrawerOpen })),
+    set((state) => {
+      const next = !state.bottomDrawerOpen;
+      setStorageValue('bottomDrawerOpen', next);
+      return { bottomDrawerOpen: next };
+    }),
 
   setLeftPanelWidth: (width: number) =>
     set(() => {
-      const clamped = Math.max(300, Math.min(700, width));
+      const clamped = Math.max(300, Math.min(1000, width));
       setStorageValue('leftPanelWidth', clamped);
       return { leftPanelWidth: clamped };
     }),
 
   setRightPanelWidth: (width: number) =>
     set(() => {
-      const clamped = Math.max(240, Math.min(500, width));
+      const clamped = Math.max(240, Math.min(600, width));
       setStorageValue('rightPanelWidth', clamped);
       return { rightPanelWidth: clamped };
     }),
@@ -126,7 +141,7 @@ export const useUIStore = create<UIState>((set) => ({
   setSelectedDatasetId: (id: string | null) =>
     set(() => ({
       selectedDatasetId: id,
-      // Do not force open the bottom drawer on dataset load
+      bottomDrawerOpen: id !== null ? true : getStorageValue('bottomDrawerOpen', false),
     })),
 
   setSelectedRowIndex: (index: number | null) =>
@@ -138,7 +153,10 @@ export const useUIStore = create<UIState>((set) => ({
     set(() => ({ commandPaletteOpen: open })),
 
   setRightPanelOpen: (open: boolean) => {
-    set(() => ({ rightPanelOpen: open }));
+    set(() => {
+      setStorageValue('rightPanelOpen', open);
+      return { rightPanelOpen: open };
+    });
   },
 
   // Selection & Chat Features
@@ -149,7 +167,7 @@ export const useUIStore = create<UIState>((set) => ({
   chatHistory: [],
   isChatLoading: false,
   isChatOpen: true,
-  leftPanelActiveTab: 'ai', // ALWAYS default to AI Assistant tab on startup
+  leftPanelActiveTab: initialTab,
 
   setSelectionMode: (mode) => set(() => ({ selectionMode: mode })),
   setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
@@ -168,10 +186,12 @@ export const useUIStore = create<UIState>((set) => ({
   setChatLoading: (loading) => set(() => ({ isChatLoading: loading })),
   toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
   
-  // Tab Switcher: Maintains identical sleek sidebar width for both Workspace and AI tabs
+  // Dynamic Tab Width Switcher: 35% window width for AI Chat tab, default 340px for Workspace tab
   setLeftPanelActiveTab: (tab) => {
+    setStorageValue('leftPanelActiveTab', tab);
     set(() => {
-      const targetWidth = getWindowWidth30Percent();
+      const targetWidth = tab === 'ai' ? getWindowWidth35Percent() : 340;
+      setStorageValue('leftPanelWidth', targetWidth);
       return {
         leftPanelActiveTab: tab,
         leftPanelOpen: true,
