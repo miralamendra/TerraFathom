@@ -198,7 +198,6 @@ export function loadSpaceSyntaxPMTilesLayer(
       : '500.geojson';
 
     const localUrl = `${origin}${cleanBase}data/${fileName}`;
-    const hfCdnUrl = `https://huggingface.co/datasets/miralamendra/space-syntax-data/resolve/main/${fileName}`;
     const ghReleaseCdnUrl = `https://github.com/miralamendra/TerraFathom/releases/download/v1.0.0/${fileName}`;
 
     const colorField = configOverrides?.colorField || metric;
@@ -249,21 +248,17 @@ export function loadSpaceSyntaxPMTilesLayer(
       map.addLayer(layerSpec);
     };
 
-    // 1. Try local dev file -> 2. Try Hugging Face CDN -> 3. Try GitHub Release CDN
+    // 1. Try local dev file -> 2. Try GitHub Release CDN
     fetch(localUrl, { method: 'HEAD' })
       .then((res) => {
         if (res.ok) {
           addGeoJSONLayer(localUrl);
         } else {
-          fetch(hfCdnUrl, { method: 'HEAD' })
-            .then((hfRes) => {
-              addGeoJSONLayer(hfRes.ok ? hfCdnUrl : ghReleaseCdnUrl);
-            })
-            .catch(() => addGeoJSONLayer(ghReleaseCdnUrl));
+          addGeoJSONLayer(ghReleaseCdnUrl);
         }
       })
       .catch(() => {
-        addGeoJSONLayer(hfCdnUrl);
+        addGeoJSONLayer(ghReleaseCdnUrl);
       });
   };
 
