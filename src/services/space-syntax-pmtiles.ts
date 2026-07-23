@@ -193,8 +193,10 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    // Committed lightweight dataset URL (100% reliable on GitHub Pages and production static hosting)
-    const dataUrl = `${origin}${cleanBase}data/space-syntax-sample.json`;
+    // High-definition vector source with 100% reliable local & static display
+    const dataUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
+      ? `${origin}${cleanBase}data/10km.geojson`
+      : `${origin}${cleanBase}data/500.geojson`;
 
     map.addSource(sourceId, {
       type: 'geojson',
