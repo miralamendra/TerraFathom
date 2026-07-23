@@ -10,10 +10,11 @@ import { useMapTooltip } from '@/hooks/use-map-tooltip';
 import { toast } from 'sonner';
 
 import { setMapInstance } from '@/core/map/map-instance';
-import { registerPMTilesProtocol } from '@/services/space-syntax-pmtiles';
+import { registerPMTilesProtocol, prefetchSpaceSyntaxDatasets } from '@/services/space-syntax-pmtiles';
 
-// Register PMTiles protocol once using documented API
+// Register PMTiles protocol once using documented API and start background dataset prefetch
 registerPMTilesProtocol();
+prefetchSpaceSyntaxDatasets();
 
 // easeInOutCubic transition easing function
 const easeInOutCubic = (t: number) => {

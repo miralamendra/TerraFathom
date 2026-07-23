@@ -168,6 +168,35 @@ export function buildColorRampExpression(
   ];
 }
 
+const datasetBlobCache: Record<string, string> = {};
+
+export function prefetchSpaceSyntaxDatasets(): void {
+  if (typeof window === 'undefined') return;
+  const base = import.meta.env.BASE_URL || '/';
+  const origin = window.location.origin;
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+
+  const files = ['space-syntax-regional.geojson.gz', '500.geojson.gz', '10km.geojson.gz'];
+
+  files.forEach(async (file) => {
+    const url = `${origin}${cleanBase}data/${file}`;
+    if (datasetBlobCache[url]) return;
+
+    try {
+      const res = await fetch(url);
+      if (res.ok && res.body && typeof DecompressionStream !== 'undefined') {
+        const ds = new DecompressionStream('gzip');
+        const decompressed = res.body.pipeThrough(ds);
+        const jsonText = await new Response(decompressed).text();
+        const blob = new Blob([jsonText], { type: 'application/json' });
+        datasetBlobCache[url] = URL.createObjectURL(blob);
+      }
+    } catch (e) {
+      // Quiet background prefetch
+    }
+  });
+}
+
 export function loadSpaceSyntaxPMTilesLayer(
   map: maplibregl.Map,
   metric: SpaceSyntaxMetric = 'BtA500',
@@ -250,6 +279,9 @@ export function loadSpaceSyntaxPMTilesLayer(
     };
 
     const fetchAndDecompressBlob = async (url: string): Promise<string | null> => {
+      if (datasetBlobCache[url]) {
+        return datasetBlobCache[url];
+      }
       try {
         const res = await fetch(url);
         if (res.ok && res.body && typeof DecompressionStream !== 'undefined') {
@@ -257,7 +289,9 @@ export function loadSpaceSyntaxPMTilesLayer(
           const decompressed = res.body.pipeThrough(ds);
           const jsonText = await new Response(decompressed).text();
           const blob = new Blob([jsonText], { type: 'application/json' });
-          return URL.createObjectURL(blob);
+          const blobUrl = URL.createObjectURL(blob);
+          datasetBlobCache[url] = blobUrl;
+          return blobUrl;
         }
       } catch (e) {
         console.error('Failed to fetch/decompress:', url, e);
@@ -265,7 +299,7 @@ export function loadSpaceSyntaxPMTilesLayer(
       return null;
     };
 
-    const loadDatasetProgressive = async () => {
+    const loadDatasetBackgroundCached = async () => {
       // Step A: Local dev server raw file (instant on localhost)
       try {
         const res = await fetch(localUrl, { method: 'HEAD' });
@@ -277,15 +311,25 @@ export function loadSpaceSyntaxPMTilesLayer(
         // Fallback to web progressive loading
       }
 
-      // Step B: Instant 1.97MB Regional Network (< 0.5 sec load on GitHub Pages)
-      const fastBlobUrl = await fetchAndDecompressBlob(fastRegionalGzUrl);
-      if (fastBlobUrl) {
-        renderGeoJSON(fastBlobUrl);
-      } else {
-        renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
+      // Step B: Check if full dataset is already pre-fetched in memory
+      if (datasetBlobCache[fullGzUrl]) {
+        renderGeoJSON(datasetBlobCache[fullGzUrl]);
+        return;
       }
 
-      // Step C: Progressive background upgrade to 100% full detail dataset
+      // Step C: Check if fast regional dataset is pre-fetched
+      if (datasetBlobCache[fastRegionalGzUrl]) {
+        renderGeoJSON(datasetBlobCache[fastRegionalGzUrl]);
+      } else {
+        const fastBlobUrl = await fetchAndDecompressBlob(fastRegionalGzUrl);
+        if (fastBlobUrl) {
+          renderGeoJSON(fastBlobUrl);
+        } else {
+          renderGeoJSON(`${origin}${cleanBase}data/space-syntax-sample.json`);
+        }
+      }
+
+      // Step D: Ensure full dataset is loaded into memory in background
       fetchAndDecompressBlob(fullGzUrl).then((fullBlobUrl) => {
         if (fullBlobUrl && map) {
           renderGeoJSON(fullBlobUrl);
@@ -293,7 +337,7 @@ export function loadSpaceSyntaxPMTilesLayer(
       }).catch(() => {});
     };
 
-    loadDatasetProgressive();
+    loadDatasetBackgroundCached();
   };
 
   if (map.isStyleLoaded()) {
