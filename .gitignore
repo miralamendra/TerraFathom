@@ -22,3 +22,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets & Private Keys
+server/private_key.json
+*.pem
+*.key
+
+# Heavy dataset files & raw processing caches (>50MB)
+Data/
+server/storage/cache/
+server/storage/jobs/
+*.gpkg
+*.parquet
+*.db
+*.shp
+*.shx
+*.dbf
+*.prj
+*.qpj
+*.qix
+*.cpg
+public/data/*.geojson
+public/data/*.zip
+public/pmtiles/*.geojson
+!public/data/space-syntax-sample.json

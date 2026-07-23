@@ -105,7 +105,17 @@ export const geojsonDefinition: LayerDefinition = {
     if (features.length === 0) return null;
 
     // COLOR ACCESSOR MAPPING
-    let getFillColor = (_d: unknown): [number, number, number] => config.fillColor || [139, 92, 246];
+    let getFillColor = (f: unknown): [number, number, number] => {
+      const featureObj = f as Feature;
+      const propColor = featureObj.properties?.color;
+      if (typeof propColor === 'string' && propColor.startsWith('#')) {
+        const r = parseInt(propColor.slice(1, 3), 16);
+        const g = parseInt(propColor.slice(3, 5), 16);
+        const b = parseInt(propColor.slice(5, 7), 16);
+        return [isNaN(r) ? 139 : r, isNaN(g) ? 92 : g, isNaN(b) ? 246 : b];
+      }
+      return config.fillColor || [139, 92, 246];
+    };
     
     if (config.colorMode === 'mapped' && config.colorField) {
       const stats = dataset.fields.find((f) => f.name === config.colorField);
@@ -137,34 +147,48 @@ export const geojsonDefinition: LayerDefinition = {
     }
 
     // HEIGHT ACCESSOR MAPPING
-    let getElevation = (_d: unknown): number => 10;
-    if (config.geojsonElevationField) {
-      const stats = dataset.fields.find((f) => f.name === config.geojsonElevationField);
-      if (stats && typeof stats.min === 'number' && typeof stats.max === 'number') {
-        getElevation = (f: unknown) => {
-          const featureObj = f as Feature;
-          const val = Number(featureObj.properties?.[config.geojsonElevationField!]);
-          return isNaN(val) ? 10 : val;
-        };
+    let getElevation = (f: unknown): number => {
+      const featureObj = f as Feature;
+      if (!featureObj || !featureObj.properties) return 15;
+
+      if (config.geojsonElevationField && featureObj.properties[config.geojsonElevationField] !== undefined) {
+        const val = Number(featureObj.properties[config.geojsonElevationField]);
+        if (!isNaN(val)) return val;
       }
-    }
+      if (featureObj.properties.height !== undefined) {
+        const val = Number(featureObj.properties.height);
+        if (!isNaN(val)) return val;
+      }
+      if (featureObj.properties.levels !== undefined) {
+        const levels = Number(featureObj.properties.levels);
+        if (!isNaN(levels)) return levels * 3.5;
+      }
+      return 15;
+    };
+
+    const isSatellite = id.includes('satellite-layer');
 
     return new GeoJsonLayer({
       id,
       data: features,
-      getFillColor,
-      getLineColor: config.strokeColor || [255, 255, 255],
-      getLineWidth: config.strokeWidth,
-      getElevation,
-      elevationScale: config.elevationScale,
-      extruded: config.extruded,
       opacity: config.opacity,
       visible: config.visible,
       pickable: true,
-      parameters: getBlendParameters(config.blendMode),
+      autoHighlight: true,
+      extruded: config.extruded,
+      filled: true,
+      stroked: !isSatellite,
+      getFillColor,
+      getLineColor: isSatellite ? [0, 0, 0, 0] : (config.colorMode === 'mapped' ? getFillColor : (config.strokeColor || [255, 255, 255])),
+      getLineWidth: isSatellite ? 0 : (config.strokeWidth || 2),
+      lineWidthMinPixels: isSatellite ? 0 : (config.strokeWidth || 1),
+      getElevation,
+      elevationScale: config.elevationScale || 1,
+      ...getBlendParameters(config.blendMode),
+      
       updateTriggers: {
         getFillColor: [config.colorMode, config.fillColor, config.colorField, config.colorPalette, config.colorScale],
-        getLineColor: [config.strokeColor],
+        getLineColor: [config.colorMode, config.strokeColor, config.colorField, config.colorPalette, config.colorScale],
         getLineWidth: [config.strokeWidth],
         getElevation: [config.geojsonElevationField],
         elevationScale: [config.elevationScale],

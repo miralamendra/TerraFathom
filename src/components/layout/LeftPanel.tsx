@@ -4,10 +4,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useFileDrop } from '@/hooks/use-file-drop';
 import { DatasetSection } from '@/components/datasets/DatasetSection';
 import { FilterSection } from '@/components/datasets/FilterSection';
-import { SAMPLE_DATASETS } from '@/core/data/sample-data';
-import { processDataset } from '@/core/data/processors/data-processor';
-import { DATASET_COLORS } from '@/core/colors/constants';
-import { toast } from 'sonner';
+import { SAMPLE_DATASETS, loadSampleDataset } from '@/core/data/sample-data';
 import { Database, Plus, UploadCloud, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
 import { useRef, useState, useEffect } from 'react';
@@ -16,10 +13,8 @@ import { AIChatbot } from './AIChatbot';
 export function LeftPanel() {
   const open = useUIStore((s) => s.leftPanelOpen);
   const width = useUIStore((s) => s.leftPanelWidth);
-  const isChatOpen = useUIStore((s) => s.isChatOpen);
 
   const datasets = useDataStore((s) => s.datasets);
-  const addDataset = useDataStore((s) => s.addDataset);
   const layers = useLayerStore((s) => s.layers);
 
   const fileDrop = useFileDrop();
@@ -28,6 +23,8 @@ export function LeftPanel() {
 
   const [samplesOpen, setSamplesOpen] = useState(false);
   const samplesRef = useRef<HTMLDivElement>(null);
+
+  const activeTab = useUIStore((s) => s.leftPanelActiveTab);
 
   // Section collapsible states
   const [datasetsExpanded, setDatasetsExpanded] = useState(true);
@@ -44,22 +41,11 @@ export function LeftPanel() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [samplesOpen]);
 
-  const handleLoadSample = async (sampleId: string, colorIndex: number) => {
-    const sample = SAMPLE_DATASETS.find((s) => s.id === sampleId);
-    if (!sample) return;
-
-    const toastId = toast.loading(`Loading ${sample.name}…`);
+  const handleLoadSample = async (sampleId: string) => {
     try {
-      const response = await fetch(sample.path);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const text = await response.text();
-      const color = DATASET_COLORS[colorIndex % DATASET_COLORS.length].bgClass;
-      const processed = processDataset(sample.name, text, sample.format, color);
-      addDataset(processed);
-      toast.success(`Loaded ${sample.name}`, { id: toastId });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast.error(`Failed to load sample: ${msg}`, { id: toastId });
+      await loadSampleDataset(sampleId);
+    } catch {
+      // error handled inside loadSampleDataset
     }
   };
 
@@ -67,14 +53,14 @@ export function LeftPanel() {
 
   return (
     <aside
-      className="h-full flex flex-col bg-bg-secondary select-none shrink-0 relative transition-all duration-500"
+      className="h-full flex flex-col bg-bg-secondary select-text shrink-0 relative transition-all duration-500"
       style={{ width }}
-      onDragOver={fileDrop.handleDragOver}
-      onDragLeave={fileDrop.handleDragLeave}
-      onDrop={fileDrop.handleDrop}
+      onDragOver={activeTab === 'workspace' ? fileDrop.handleDragOver : undefined}
+      onDragLeave={activeTab === 'workspace' ? fileDrop.handleDragLeave : undefined}
+      onDrop={activeTab === 'workspace' ? fileDrop.handleDrop : undefined}
     >
       {/* Drag Overlay */}
-      {fileDrop.isDragOver && (
+      {fileDrop.isDragOver && activeTab === 'workspace' && (
         <div className="absolute inset-0 z-50 bg-bg-secondary/40 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-300">
           <div className="bg-bg-elevated/80 border border-accent/30 shadow-2xl rounded-2xl p-8 flex flex-col items-center max-w-[80%] text-center">
             <UploadCloud size={32} className="text-accent mb-3 animate-bounce" strokeWidth={1.5} />
@@ -93,134 +79,115 @@ export function LeftPanel() {
         className="hidden"
       />
 
-      {/* Workspace Header */}
-      <div className="px-4 py-3.5 flex items-center justify-between border-b border-border-primary shrink-0">
-        <span className="text-[16px] font-bold text-text-primary tracking-tight">Workspace</span>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="group relative flex items-center justify-center w-7 h-7 rounded-full bg-bg-tertiary/20 hover:bg-bg-elevated transition-all duration-300 border border-border-primary/20 hover:border-border-primary/60 cursor-pointer"
-          title="Import Dataset"
-        >
-          <Plus size={13} className="text-text-secondary group-hover:text-text-primary transition-colors duration-300 group-hover:scale-110" strokeWidth={1.5} />
-        </button>
-      </div>
-
-      {/* Scrollable sections */}
-      <div className={cn(
-        "overflow-y-auto scrollbar-thin",
-        isChatOpen ? "flex-initial max-h-[50%] min-h-0" : "flex-1 min-h-0"
-      )}>
-        <div className="px-3 pb-6 flex flex-col gap-5 mt-2">
-          
-          {/* Datasets list (with nested layers) */}
-          <div className="flex flex-col gap-1.5">
-            <SectionHeader 
-              title="Datasets" 
-              expanded={datasetsExpanded}
-              onToggle={() => setDatasetsExpanded(!datasetsExpanded)}
-              action={
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="w-4.5 h-4.5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
-                  title="Import Dataset"
-                >
-                  <Plus size={11} />
-                </button>
-              }
-            />
+      {activeTab === 'ai' ? (
+        <div className="flex-1 min-h-0 flex flex-col p-2.5">
+          <AIChatbot fullPanelMode />
+        </div>
+      ) : (
+        <div className="overflow-y-auto scrollbar-thin flex-1 min-h-0">
+          <div className="px-3 pb-6 flex flex-col gap-5 mt-3">
             
-            {datasetsExpanded && (
-              datasetList.length === 0 ? (
-                <div className="mx-2 mt-1 py-8 flex flex-col items-center text-center bg-gradient-to-b from-bg-tertiary/10 to-transparent rounded-2xl border border-border-primary/20 shadow-inner transition-all duration-500 hover:border-border-primary/40 group">
-                  <div className="w-10 h-10 rounded-full bg-bg-tertiary/20 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-500 border border-border-primary/20 relative">
-                    <div className="absolute inset-0 rounded-full bg-accent/5 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <Database size={16} className="text-text-tertiary opacity-70 group-hover:text-text-secondary transition-colors" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-[12px] font-medium text-text-primary tracking-tight">No data loaded</span>
-                  <span className="text-[10px] text-text-tertiary max-w-[150px] mt-1.5 leading-relaxed opacity-70">
-                    Drag & drop files or click + to begin
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-0.5">
-                  {datasetList.map((dataset) => (
-                    <DatasetSection
-                      key={dataset.id}
-                      dataset={dataset}
-                      layers={layers.filter((l) => l.datasetId === dataset.id)}
-                    />
-                  ))}
-                </div>
-              )
-            )}
-          </div>
-
-          {/* Filters section */}
-          {datasetList.length > 0 && (
+            {/* Datasets list (with nested layers) */}
             <div className="flex flex-col gap-1.5">
               <SectionHeader 
-                title="Active Filters" 
-                expanded={filtersExpanded}
-                onToggle={() => setFiltersExpanded(!filtersExpanded)}
+                title="Datasets" 
+                expanded={datasetsExpanded}
+                onToggle={() => setDatasetsExpanded(!datasetsExpanded)}
+                action={
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-4.5 h-4.5 flex items-center justify-center rounded-[4px] hover:bg-bg-hover text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+                    title="Import Dataset"
+                  >
+                    <Plus size={11} />
+                  </button>
+                }
               />
-              {filtersExpanded && <FilterSection />}
+              
+              {datasetsExpanded && (
+                datasetList.length === 0 ? (
+                  <div className="mx-2 mt-1 py-8 flex flex-col items-center text-center bg-gradient-to-b from-bg-tertiary/10 to-transparent rounded-2xl border border-white/[0.04] shadow-inner transition-all duration-500 hover:border-white/[0.08] group">
+                    <div className="w-10 h-10 rounded-full bg-bg-tertiary/20 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform duration-500 border border-white/[0.05] relative">
+                      <div className="absolute inset-0 rounded-full bg-accent/5 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <Database size={16} className="text-text-tertiary opacity-70 group-hover:text-text-secondary transition-colors" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-[12px] font-medium text-text-primary tracking-tight">No data loaded</span>
+                    <span className="text-[10px] text-text-tertiary max-w-[150px] mt-1.5 leading-relaxed opacity-70">
+                      Drag & drop files or click + to begin
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-0.5">
+                    {datasetList.map((dataset) => (
+                      <DatasetSection
+                        key={dataset.id}
+                        dataset={dataset}
+                        layers={layers.filter((l) => l.datasetId === dataset.id)}
+                      />
+                    ))}
+                  </div>
+                )
+              )}
             </div>
-          )}
 
-          {/* Samples */}
-          <div className="flex flex-col gap-1.5">
-            <SectionHeader 
-              title="Sample data" 
-              expanded={samplesExpanded}
-              onToggle={() => setSamplesExpanded(!samplesExpanded)}
-            />
-            
-            {samplesExpanded && (
-              <div className="grid grid-cols-3 gap-1.5 px-2">
-                {SAMPLE_DATASETS.map((sample, idx) => {
-                  const isLoaded = datasetList.some((d) => d.name === sample.name);
-                  const displayName = 
-                    sample.name === 'Pittsburgh Transit' 
-                      ? 'Transit' 
-                      : sample.name === 'NYC Taxi Trips' 
-                        ? 'NYC Taxi' 
-                        : sample.name;
-                  return (
-                    <button
-                      key={sample.id}
-                      type="button"
-                      disabled={isLoaded}
-                      onClick={() => handleLoadSample(sample.id, idx)}
-                      className={cn(
-                        'relative flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-center transition-all duration-300 cursor-pointer select-none group',
-                        isLoaded
-                          ? 'opacity-30 bg-bg-tertiary/5 border-transparent text-text-tertiary pointer-events-none'
-                          : 'bg-bg-tertiary/5 text-text-secondary hover:bg-bg-tertiary/15 hover:text-text-primary active:scale-95 animate-pulse-glow'
-                      )}
-                    >
-                      <span className="text-[10px] font-semibold tracking-tight truncate w-full px-0.5">{displayName}</span>
-                      <span className="text-[8px] text-text-tertiary mt-0.5 uppercase tracking-wider">{sample.format}</span>
-                    </button>
-                  );
-                })}
+            {/* Filters section */}
+            {datasetList.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <SectionHeader 
+                  title="Active Filters" 
+                  expanded={filtersExpanded}
+                  onToggle={() => setFiltersExpanded(!filtersExpanded)}
+                />
+                {filtersExpanded && <FilterSection />}
               </div>
             )}
+
+            {/* Samples */}
+            <div className="flex flex-col gap-1.5">
+              <SectionHeader 
+                title="Sample data" 
+                expanded={samplesExpanded}
+                onToggle={() => setSamplesExpanded(!samplesExpanded)}
+              />
+              
+              {samplesExpanded && (
+                <div className="grid grid-cols-3 gap-1.5 px-2">
+                  {SAMPLE_DATASETS.map((sample) => {
+                    const isLoaded = datasetList.some((d) => d.name === sample.name);
+                    const displayName = 
+                      sample.name === 'Pittsburgh Transit' 
+                        ? 'Transit' 
+                        : sample.name === 'NYC Taxi Trips' 
+                          ? 'NYC Taxi' 
+                          : sample.name;
+                    return (
+                      <button
+                        key={sample.id}
+                        type="button"
+                        disabled={isLoaded}
+                        onClick={() => handleLoadSample(sample.id)}
+                        className={cn(
+                          'relative flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-center transition-all duration-300 cursor-pointer select-none group',
+                          isLoaded
+                            ? 'opacity-30 bg-bg-tertiary/5 border-transparent text-text-tertiary pointer-events-none'
+                            : 'bg-bg-tertiary/10 border-white/[0.04] text-text-secondary hover:bg-bg-tertiary/25 hover:text-text-primary active:scale-95'
+                        )}
+                      >
+                        <span className="text-[10px] font-semibold tracking-tight truncate w-full px-0.5">{displayName}</span>
+                        <span className="text-[8px] text-text-tertiary mt-0.5 uppercase tracking-wider">{sample.format}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Fixed bottom divider & Pinned AI Copilot Chatbot */}
-      <div className={cn(
-        "border-t border-border-primary px-3 pb-3 flex flex-col min-h-0",
-        isChatOpen ? "flex-1 min-h-[180px]" : "shrink-0"
-      )}>
-        <AIChatbot />
-      </div>
+      )}
     </aside>
   );
 }

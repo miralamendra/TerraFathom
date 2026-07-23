@@ -26,7 +26,7 @@ export function useDeckLayers(): Layer[] {
     if (!layer.config.visible) continue;
 
     const dataset = datasets[layer.datasetId];
-    if (!dataset) continue;
+    if (!dataset || dataset.isPMTiles) continue;
 
     const def = getLayerDefinition(layer.type);
     if (!def) continue;

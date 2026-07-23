@@ -37,7 +37,7 @@ export function BottomDrawer() {
 
   return (
     <section
-      className="absolute bottom-0 left-0 right-0 flex flex-col bg-bg-secondary border-t border-border-primary select-none z-30"
+      className="absolute bottom-0 left-0 right-0 flex flex-col bg-bg-secondary border-t border-border-primary select-text z-30"
       style={{ height }}
     >
       {/* Header bar with browser-like tabs */}

@@ -7,7 +7,7 @@ import { type ProcessedDataset } from '@/types/dataset';
 export function processDataset(
   name: string,
   rawContent: string,
-  format: 'csv' | 'geojson',
+  format: 'csv' | 'geojson' | 'shp',
   color: string
 ): ProcessedDataset {
   const id = `${format}-${Math.random().toString(36).substring(2, 11)}`;

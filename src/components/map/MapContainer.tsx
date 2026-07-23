@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import { DeckGL, FlyToInterpolator, GeoJsonLayer } from 'deck.gl';
+import { DeckGL, FlyToInterpolator, GeoJsonLayer, TileLayer, BitmapLayer } from 'deck.gl';
 import { useMapStore } from '@/stores/map-store';
 import { getMapStyleUrl } from '@/core/map/map-styles';
 import { useUIStore } from '@/stores/ui-store';
@@ -8,6 +8,12 @@ import { useDataStore } from '@/stores/data-store';
 import { useDeckLayers } from '@/hooks/use-deck-layers';
 import { useMapTooltip } from '@/hooks/use-map-tooltip';
 import { toast } from 'sonner';
+
+import { setMapInstance } from '@/core/map/map-instance';
+import { registerPMTilesProtocol } from '@/services/space-syntax-pmtiles';
+
+// Register PMTiles protocol once using documented API
+registerPMTilesProtocol();
 
 // easeInOutCubic transition easing function
 const easeInOutCubic = (t: number) => {
@@ -27,6 +33,7 @@ export function MapContainer() {
   const mapStyle = useMapStore((s) => s.mapStyle);
   const transitionDuration = useMapStore((s) => s.transitionDuration);
   const setViewport = useMapStore((s) => s.setViewport);
+  const earthEngineTileUrl = useMapStore((s) => s.earthEngineTileUrl);
 
   const datasets = useDataStore((s) => s.datasets);
   const datasetCount = Object.keys(datasets).length;
@@ -34,6 +41,7 @@ export function MapContainer() {
   const selectionMode = useUIStore((s) => s.selectionMode);
   const selectionCoords = useUIStore((s) => s.selectionCoordinates);
   const setSelectionCoords = useUIStore((s) => s.setSelectionCoordinates);
+  const setSelectionMode = useUIStore((s) => s.setSelectionMode);
 
   const leftOpen = useUIStore((s) => s.leftPanelOpen);
   const rightOpen = useUIStore((s) => s.rightPanelOpen);
@@ -41,6 +49,38 @@ export function MapContainer() {
   const leftWidth = useUIStore((s) => s.leftPanelWidth);
   const rightWidth = useUIStore((s) => s.rightPanelWidth);
   const bottomHeight = useUIStore((s) => s.bottomDrawerHeight);
+
+  // Auto-resize WebGL canvas when panels fold or resize for crisp native high-DPI rendering
+  useEffect(() => {
+    const triggerResize = () => {
+      if (mapRef.current) {
+        mapRef.current.resize();
+      }
+    };
+
+    triggerResize();
+    const t1 = setTimeout(triggerResize, 50);
+    const t2 = setTimeout(triggerResize, 150);
+    const t3 = setTimeout(triggerResize, 300);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [leftOpen, rightOpen, bottomOpen, leftWidth, rightWidth, bottomHeight]);
+
+  // Direct ResizeObserver on map container DIV for instant resolution sync
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.resize();
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const deckLayers = useDeckLayers();
   const styleUrl = getMapStyleUrl(mapStyle);
@@ -80,11 +120,42 @@ export function MapContainer() {
       bearing: bearing,
       interactive: false,
       attributionControl: false,
+      pixelRatio: Math.max(2, window.devicePixelRatio || 1),
     });
 
     mapRef.current = map;
+    setMapInstance(map);
+
+    // Feature click & hover listeners for MapLibre vector road layers
+    const onLayerClick = (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
+      if (e.features && e.features.length > 0) {
+        const feat = e.features[0];
+        const props = feat.properties || {};
+        const rowId = typeof props.__id === 'number' ? props.__id : (props.segment_id ?? props.ID ?? props.id);
+        if (rowId !== undefined) {
+          useUIStore.setState({ selectedRowIndex: Number(rowId), bottomDrawerOpen: true });
+          const metricVal = props.choice_500m || props.choice_10k || props.choice || props.BtA500 || 0;
+          toast.success(`Selected Road Segment #${rowId} (Choice: ${Number(metricVal).toFixed(2)})`);
+        }
+      }
+    };
+
+    const onMouseEnter = () => {
+      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
+    };
+    const onMouseLeave = () => {
+      if (containerRef.current) containerRef.current.style.cursor = '';
+    };
+
+    map.on('click', 'space-syntax-pmtiles-layer', onLayerClick);
+    map.on('mouseenter', 'space-syntax-pmtiles-layer', onMouseEnter);
+    map.on('mouseleave', 'space-syntax-pmtiles-layer', onMouseLeave);
 
     return () => {
+      map.off('click', 'space-syntax-pmtiles-layer', onLayerClick);
+      map.off('mouseenter', 'space-syntax-pmtiles-layer', onMouseEnter);
+      map.off('mouseleave', 'space-syntax-pmtiles-layer', onMouseLeave);
+      setMapInstance(null);
       map.remove();
       mapRef.current = null;
     };
@@ -237,6 +308,7 @@ export function MapContainer() {
   const handleDragEnd = () => {
     if (selectionMode === 'none') return;
     dragStartRef.current = null;
+    setSelectionMode('none');
     toast.success('Selection boundary registered.');
   };
 
@@ -269,14 +341,33 @@ export function MapContainer() {
         getFillColor: [200, 164, 106, 30], // 30% opacity warm brass
         getLineColor: [200, 164, 106, 220],
         getLineWidth: 2,
-        lineWidthUnits: 'pixels',
-        getPointRadius: 8,
-        pointRadiusUnits: 'pixels',
-        getPointRadiusMinPixels: 4,
-        getPointRadiusMaxPixels: 15,
       });
     }
   }
+
+  const eeTileLayer = earthEngineTileUrl
+    ? new TileLayer({
+        id: 'gee-tile-layer',
+        data: earthEngineTileUrl,
+        minZoom: 0,
+        maxZoom: 22,
+        tileSize: 256,
+        renderSubLayers: (props: any) => {
+          const { west, south, east, north } = props.tile.bbox;
+          return new BitmapLayer(props, {
+            data: undefined,
+            image: props.data,
+            bounds: [west, south, east, north],
+          });
+        },
+      })
+    : null;
+
+  const layersList = [
+    ...(eeTileLayer ? [eeTileLayer] : []),
+    ...deckLayers,
+    ...(selectionLayer ? [selectionLayer] : [])
+  ];
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden bg-bg-primary">
@@ -292,7 +383,7 @@ export function MapContainer() {
             ? { doubleClickZoom: true, dragRotate: true, touchRotate: true, dragPan: true }
             : { doubleClickZoom: false, dragRotate: false, touchRotate: false, dragPan: false }
         }
-        layers={selectionLayer ? [...deckLayers, selectionLayer] : deckLayers}
+        layers={layersList}
         getCursor={({ isDragging }) => (isDragging ? 'grabbing' : 'grab')}
         onHover={handleHover}
         onClick={handleClick}

@@ -89,9 +89,9 @@ export function getViewportForDataset(
 
   if (!bounds) {
     return {
-      longitude: -73.935242,
-      latitude: 40.73061,
-      zoom: 11,
+      longitude: 79.861244,
+      latitude: 6.927079,
+      zoom: 12,
       pitch: 50,
       bearing: 25,
     };

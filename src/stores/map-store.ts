@@ -14,11 +14,14 @@ interface MapState {
   // Transition params
   transitionDuration: number;
 
+  earthEngineTileUrl: string | null;
+
   setViewport: (viewport: Partial<Viewport>) => void;
   animateViewport: (viewport: Partial<Viewport>, duration?: number) => void;
   setMapStyle: (styleId: string) => void;
   toggle3D: () => void;
   resetNorth: () => void;
+  setEarthEngineTileUrl: (url: string | null) => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -30,6 +33,7 @@ export const useMapStore = create<MapState>((set) => ({
   mapStyle: 'dark-matter',
   is3D: false,
   transitionDuration: 0,
+  earthEngineTileUrl: null,
 
   setViewport: (vp) =>
     set((state) => {
@@ -75,5 +79,6 @@ export const useMapStore = create<MapState>((set) => ({
     }),
 
   resetNorth: () => set(() => ({ bearing: 0, transitionDuration: 300 })),
+  setEarthEngineTileUrl: (url) => set(() => ({ earthEngineTileUrl: url })),
 }));
 export default useMapStore;

@@ -47,11 +47,11 @@ export function detectCoordinates(headers: string[], rows: DatasetRecord[]): { l
 
 export function computeBounds(
   records: DatasetRecord[],
-  format: 'csv' | 'geojson',
+  format: 'csv' | 'geojson' | 'shp',
   latField?: string,
   lngField?: string
 ): [number, number, number, number] | null {
-  if (format === 'geojson') {
+  if (format === 'geojson' || format === 'shp') {
     // Collect all valid geometries
     const features: Feature[] = [];
     for (const r of records) {

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { type LayerInstance, type LayerType, type LayerConfig } from '@/core/layers/base-layer';
 import { getLayerDefinition } from '@/core/layers/layer-registry';
 import { useUIStore } from './ui-store';
+import { getMapInstance } from '@/core/map/map-instance';
+import { updateSpaceSyntaxStyleFromLayerConfig } from '@/services/space-syntax-pmtiles';
 
 interface LayerState {
   layers: LayerInstance[];
@@ -59,6 +61,15 @@ export const useLayerStore = create<LayerState>((set, get) => ({
   },
 
   toggleLayerVisibility: (id) => {
+    const map = getMapInstance();
+    const layer = get().layers.find((l) => l.id === id);
+    if (layer) {
+      const nextVisible = !layer.config.visible;
+      if (map && layer.datasetId.includes('space-syntax')) {
+        updateSpaceSyntaxStyleFromLayerConfig(map, { visible: nextVisible });
+      }
+    }
+
     set((state) => ({
       layers: state.layers.map((l) =>
         l.id === id ? { ...l, config: { ...l.config, visible: !l.config.visible } } : l
@@ -67,6 +78,13 @@ export const useLayerStore = create<LayerState>((set, get) => ({
   },
 
   updateLayerConfig: (id, config) => {
+    const map = getMapInstance();
+    const layer = get().layers.find((l) => l.id === id);
+    if (map && layer && layer.datasetId.includes('space-syntax')) {
+      const nextConfig = { ...layer.config, ...config };
+      updateSpaceSyntaxStyleFromLayerConfig(map, nextConfig);
+    }
+
     set((state) => ({
       layers: state.layers.map((l) =>
         l.id === id ? { ...l, config: { ...l.config, ...config } } : l

@@ -32,6 +32,7 @@ interface UIState {
   chatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
   isChatLoading: boolean;
   isChatOpen: boolean;
+  leftPanelActiveTab: 'ai' | 'workspace';
 
   setSelectionMode: (mode: 'none' | 'point' | 'rectangle' | 'freehand') => void;
   setSelectionCoordinates: (coords: [number, number][]) => void;
@@ -41,6 +42,7 @@ interface UIState {
   clearChatHistory: () => void;
   setChatLoading: (loading: boolean) => void;
   toggleChat: () => void;
+  setLeftPanelActiveTab: (tab: 'ai' | 'workspace') => void;
 }
 
 // LocalStorage Helper Keys
@@ -65,14 +67,22 @@ const setStorageValue = <T>(key: string, value: T): void => {
 const getInitialApiKey = (): string => {
   const storedKey = getStorageValue<string>('geminiApiKey', '');
   const envApiKey = import.meta.env.VITE_GEMINI_API_KEY ?? '';
-  return storedKey || envApiKey;
+  return storedKey || envApiKey || 'Cvl015afU0purMg6UPY9P7KKrHCppJnA';
 };
+
+const getWindowWidth35Percent = (): number => {
+  const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1400;
+  return Math.max(380, Math.min(800, Math.round(winWidth * 0.35)));
+};
+
+const initialTab = getStorageValue<'ai' | 'workspace'>('leftPanelActiveTab', 'ai');
+const initialLeftWidth = initialTab === 'ai' ? getWindowWidth35Percent() : 340;
 
 export const useUIStore = create<UIState>((set) => ({
   leftPanelOpen: getStorageValue('leftPanelOpen', true),
   rightPanelOpen: getStorageValue('rightPanelOpen', false),
   bottomDrawerOpen: getStorageValue('bottomDrawerOpen', false),
-  leftPanelWidth: getStorageValue('leftPanelWidth', 320),
+  leftPanelWidth: initialLeftWidth,
   rightPanelWidth: getStorageValue('rightPanelWidth', 320),
   bottomDrawerHeight: getStorageValue('bottomDrawerHeight', 240),
   selectedLayerId: null,
@@ -102,7 +112,7 @@ export const useUIStore = create<UIState>((set) => ({
 
   setLeftPanelWidth: (width: number) =>
     set(() => {
-      const clamped = Math.max(200, Math.min(600, width));
+      const clamped = Math.max(300, Math.min(1000, width));
       setStorageValue('leftPanelWidth', clamped);
       return { leftPanelWidth: clamped };
     }),
@@ -131,7 +141,6 @@ export const useUIStore = create<UIState>((set) => ({
   setSelectedDatasetId: (id: string | null) =>
     set(() => ({
       selectedDatasetId: id,
-      // Automatically open bottom drawer if a dataset is selected, to show its table
       bottomDrawerOpen: id !== null ? true : getStorageValue('bottomDrawerOpen', false),
     })),
 
@@ -154,12 +163,13 @@ export const useUIStore = create<UIState>((set) => ({
   selectionMode: 'none',
   selectionCoordinates: [],
   geminiApiKey: getInitialApiKey(),
-  selectedChatModel: getStorageValue('selectedChatModel', 'gemini-2.5-flash'),
+  selectedChatModel: getStorageValue('selectedChatModel', 'mistral-small-latest'),
   chatHistory: [],
   isChatLoading: false,
   isChatOpen: true,
+  leftPanelActiveTab: initialTab,
 
-  setSelectionMode: (mode) => set(() => ({ selectionMode: mode, selectionCoordinates: [] })),
+  setSelectionMode: (mode) => set(() => ({ selectionMode: mode })),
   setSelectionCoordinates: (coords) => set(() => ({ selectionCoordinates: coords })),
   setGeminiApiKey: (key) => {
     setStorageValue('geminiApiKey', key);
@@ -175,4 +185,18 @@ export const useUIStore = create<UIState>((set) => ({
   clearChatHistory: () => set(() => ({ chatHistory: [] })),
   setChatLoading: (loading) => set(() => ({ isChatLoading: loading })),
   toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
+  
+  // Dynamic Tab Width Switcher: 35% window width for AI Chat tab, default 340px for Workspace tab
+  setLeftPanelActiveTab: (tab) => {
+    setStorageValue('leftPanelActiveTab', tab);
+    set(() => {
+      const targetWidth = tab === 'ai' ? getWindowWidth35Percent() : 340;
+      setStorageValue('leftPanelWidth', targetWidth);
+      return {
+        leftPanelActiveTab: tab,
+        leftPanelOpen: true,
+        leftPanelWidth: targetWidth,
+      };
+    });
+  },
 }));

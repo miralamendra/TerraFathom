@@ -8,6 +8,18 @@ export interface PaletteOption {
 }
 
 export const COLOR_PALETTES: PaletteOption[] = [
+  {
+    id: 'space-syntax',
+    name: 'Space Syntax Classic (Blue -> Red)',
+    type: 'sequential',
+    colors: [
+      [44, 123, 182],  // Deep Indigo/Blue (Low metric / Bottom 50%)
+      [171, 217, 233], // Cyan / Light Blue (Low-Mid)
+      [255, 255, 191], // Soft Yellow (Medium)
+      [253, 174, 97],  // Bright Orange (High-Mid)
+      [215, 25, 28],   // Deep Red / Crimson (High Metric / Top 10%)
+    ],
+  },
   // SEQUENTIAL
   {
     id: 'curated',

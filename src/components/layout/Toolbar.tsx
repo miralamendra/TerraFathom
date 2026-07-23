@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon, Bot } from 'lucide-react';
+import { PanelLeft, PanelBottom, PanelRight, Plus, Search, Sun, Moon, Bot, HardDrive } from 'lucide-react';
 import { Button, IconButton, Select } from '@/components/ui';
 import { useUIStore } from '@/stores/ui-store';
 import { useMapStore } from '@/stores/map-store';
@@ -22,6 +22,9 @@ export function Toolbar({ onLogoClick }: ToolbarProps) {
   const toggleRight = useUIStore((s) => s.toggleRightPanel);
   const toggleBottom = useUIStore((s) => s.toggleBottomDrawer);
   const toggleChat = useUIStore((s) => s.toggleChat);
+
+  const activeTab = useUIStore((s) => s.leftPanelActiveTab);
+  const setActiveTab = useUIStore((s) => s.setLeftPanelActiveTab);
 
   const activeStyle = useMapStore((s) => s.mapStyle);
   const setMapStyle = useMapStore((s) => s.setMapStyle);
@@ -58,19 +61,51 @@ export function Toolbar({ onLogoClick }: ToolbarProps) {
         className="hidden"
       />
 
-      <div 
-        onClick={onLogoClick}
-        className="flex items-center gap-3 select-none cursor-pointer hover:opacity-90 active:scale-95 transition-all"
-        title="Go to Landing Page"
-      >
-        <TerraFathomLogo size={18} />
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-semibold text-[13px] tracking-[-0.01em] text-text-primary">
-            TerraFathom
-          </span>
-          <span className="text-[10px] font-mono text-text-tertiary select-none">
-            v1.0
-          </span>
+      <div className="flex items-center gap-5">
+        <div 
+          onClick={onLogoClick}
+          className="flex items-center gap-2.5 select-none cursor-pointer hover:opacity-90 active:scale-95 transition-all"
+          title="Go to Landing Page"
+        >
+          <TerraFathomLogo size={25} />
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-bold text-[17px] tracking-tight text-text-primary leading-none">
+              TerraFathom
+            </span>
+            <span className="text-[11px] font-mono text-text-tertiary select-none leading-none">
+              v1.0
+            </span>
+          </div>
+        </div>
+
+        {/* Tab Switcher: AI Assistant & Workspace */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#1A1A1A] border border-white/[0.06]">
+          <button
+            type="button"
+            onClick={() => setActiveTab('ai')}
+            className={cn(
+              "px-3 py-1 flex items-center gap-1.5 rounded-lg text-xs font-bold tracking-tight transition-all cursor-pointer select-none",
+              activeTab === 'ai' 
+                ? "bg-[#C8A46A]/20 text-[#C8A46A] shadow-sm" 
+                : "text-text-tertiary hover:text-[#C8A46A]"
+            )}
+          >
+            <span>AI Assistant</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('workspace')}
+            className={cn(
+              "px-3 py-1 flex items-center gap-1.5 rounded-lg text-xs font-bold tracking-tight transition-all cursor-pointer select-none",
+              activeTab === 'workspace' 
+                ? "bg-[#C8A46A]/20 text-[#C8A46A] shadow-sm" 
+                : "text-text-tertiary hover:text-[#C8A46A]"
+            )}
+          >
+            <HardDrive size={13} className={activeTab === 'workspace' ? "text-[#C8A46A]" : ""} />
+            <span>Workspace</span>
+          </button>
         </div>
       </div>
 

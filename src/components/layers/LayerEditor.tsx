@@ -228,15 +228,26 @@ export function LayerEditor({ layer, dataset }: LayerEditorProps) {
               {config.colorMode === 'fixed' || !config.colorField ? (
                 <div className="flex items-center gap-2 animate-fade-in">
                   <FixedColorSwatch
-                    color={config.fillColor || [79, 124, 255]}
-                    onChange={(c) => updateConfig(layer.id, { fillColor: c })}
+                    color={config.fillColor || config.strokeColor || [79, 124, 255]}
+                    onChange={(c) => {
+                      if (layer.type === 'geojson') {
+                        updateConfig(layer.id, { fillColor: c, strokeColor: c });
+                      } else {
+                        updateConfig(layer.id, { fillColor: c });
+                      }
+                    }}
                   />
                   <div className="flex-1">
                     <ColorPaletteSelector
                       value={config.colorPalette || 'curated'}
                       onChange={(paletteId) => {
                         const p = getPalette(paletteId);
-                        updateConfig(layer.id, { colorPalette: paletteId, fillColor: p.colors[Math.floor(p.colors.length / 2)] });
+                        const c = p.colors[Math.floor(p.colors.length / 2)];
+                        if (layer.type === 'geojson') {
+                          updateConfig(layer.id, { colorPalette: paletteId, fillColor: c, strokeColor: c });
+                        } else {
+                          updateConfig(layer.id, { colorPalette: paletteId, fillColor: c });
+                        }
                       }}
                     />
                   </div>

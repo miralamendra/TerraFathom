@@ -14,40 +14,114 @@ interface OSMWay {
   geometry?: { lat: number; lon: number }[];
 }
 
-interface OverpassResponse {
-  elements: OSMWay[];
+interface OSMNode {
+  id: number;
+  type: 'node';
+  lat: number;
+  lon: number;
+  tags?: {
+    name?: string;
+    amenity?: string;
+    [key: string]: any;
+  };
+}
+
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+];
+
+/**
+ * Execute Overpass query with mirror failover and timeout handling
+ */
+async function queryOverpassMirror(query: string): Promise<any> {
+  let lastError: Error | null = null;
+
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 18000); // 18s per mirror timeout
+
+      const url = `${endpoint}?data=${encodeURIComponent(query)}`;
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        return await response.json();
+      }
+      lastError = new Error(`Mirror ${endpoint} returned status ${response.status}`);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  throw lastError || new Error('All Overpass API mirrors failed to respond.');
 }
 
 /**
- * Queries OSM Overpass API for buildings inside [south, west, north, east] bounds
- * and parses them into a standard GeoJSON FeatureCollection Dataset.
+ * Helper to split large bounding boxes into a 2x2 grid of sub-quadrants
+ */
+function splitBoundingBox(bounds: [number, number, number, number]): [number, number, number, number][] {
+  const [south, west, north, east] = bounds;
+  const latSpan = north - south;
+  const lngSpan = east - west;
+
+  // If boundary is compact (<= 1.5km), no need to split
+  if (latSpan <= 0.018 && lngSpan <= 0.018) {
+    return [bounds];
+  }
+
+  const midLat = south + latSpan / 2;
+  const midLng = west + lngSpan / 2;
+
+  return [
+    [south, west, midLat, midLng],
+    [south, midLng, midLat, east],
+    [midLat, west, north, midLng],
+    [midLat, midLng, north, east],
+  ];
+}
+
+/**
+ * Queries OSM Overpass API for 3D buildings inside [south, west, north, east] bounds
+ * Supports large selection areas via automatic 2x2 sub-quadrant tiling and mirror failover.
  */
 export async function fetchAndParseOSMBuildings(
   bounds: [number, number, number, number]
 ): Promise<ProcessedDataset> {
-  const [south, west, north, east] = bounds;
+  const quadrants = splitBoundingBox(bounds);
+  const elementsMap = new Map<number, OSMWay>();
 
-  // 1. Construct Overpass Query
-  const query = `[out:json][timeout:15];way["building"](${south},${west},${north},${east});out geom;`;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const results = await Promise.allSettled(
+    quadrants.map(async ([s, w, n, e]) => {
+      const query = `[out:json][timeout:25];way["building"](${s},${w},${n},${e});out geom;`;
+      const data = await queryOverpassMirror(query);
+      return data.elements || [];
+    })
+  );
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`OSM Overpass API returned status ${response.status}`);
+  for (const res of results) {
+    if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+      for (const el of res.value) {
+        if (el.type === 'way' && el.id && !elementsMap.has(el.id)) {
+          elementsMap.set(el.id, el);
+        }
+      }
+    }
   }
 
-  const data = (await response.json()) as OverpassResponse;
-  const elements = data.elements || [];
+  const elements = Array.from(elementsMap.values());
 
   if (elements.length === 0) {
-    throw new Error('No 3D building geometries found in this sector.');
+    throw new Error('No 3D building geometries found in this sector. Try selecting another area.');
   }
 
-  // 2. Parse ways to GeoJSON Features
+  // Parse ways to GeoJSON Features
   const features = elements
-    .filter((el) => el.type === 'way' && el.geometry && el.geometry.length > 2)
+    .filter((el) => el.geometry && el.geometry.length > 2)
     .map((way, idx) => {
-      // OpenStreetMap polygons must have closed loops (first and last coordinate are identical)
       const coords = way.geometry!.map((pt) => [pt.lon, pt.lat]);
       if (
         coords[0][0] !== coords[coords.length - 1][0] ||
@@ -56,14 +130,13 @@ export async function fetchAndParseOSMBuildings(
         coords.push([coords[0][0], coords[0][1]]);
       }
 
-      // Height calculation
-      let height = 15; // default 15m (~5 stories)
+      let height = 15;
       if (way.tags?.height) {
         const parsedHeight = parseFloat(way.tags.height);
         if (!isNaN(parsedHeight)) height = parsedHeight;
       } else if (way.tags?.['building:levels']) {
         const levels = parseInt(way.tags['building:levels'], 10);
-        if (!isNaN(levels)) height = levels * 3; // ~3 meters per level
+        if (!isNaN(levels)) height = levels * 3;
       }
 
       return {
@@ -92,16 +165,81 @@ export async function fetchAndParseOSMBuildings(
   };
 
   const rawContent = JSON.stringify(geojson);
-  const datasetName = `OSM 3D Buildings (${features.length} structural polygons)`;
+  const datasetName = `OSM 3D Buildings (${features.length} structures)`;
 
   const processed = processDataset(
     datasetName,
     rawContent,
     'geojson',
-    '#C8A46A' // Warm Brass theme accent
+    '#C8A46A'
   );
 
-  // Set a distinct custom ID
   processed.id = `osm-buildings-${Date.now()}`;
+  return processed;
+}
+
+/**
+ * Queries OSM Overpass API for amenities (hospitals, schools, restaurants, etc.) inside bounds
+ */
+export async function fetchAndParseOSMAmenities(
+  bounds: [number, number, number, number]
+): Promise<ProcessedDataset> {
+  const quadrants = splitBoundingBox(bounds);
+  const elementsMap = new Map<number, OSMNode>();
+
+  const results = await Promise.allSettled(
+    quadrants.map(async ([s, w, n, e]) => {
+      const query = `[out:json][timeout:25];node["amenity"](${s},${w},${n},${e});out body;`;
+      const data = await queryOverpassMirror(query);
+      return data.elements || [];
+    })
+  );
+
+  for (const res of results) {
+    if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+      for (const el of res.value) {
+        if (el.type === 'node' && el.id && !elementsMap.has(el.id)) {
+          elementsMap.set(el.id, el);
+        }
+      }
+    }
+  }
+
+  const elements = Array.from(elementsMap.values());
+
+  if (elements.length === 0) {
+    throw new Error('No amenity points found in this sector.');
+  }
+
+  const features = elements.map((node, idx) => ({
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Point' as const,
+      coordinates: [node.lon, node.lat]
+    },
+    properties: {
+      __id: idx,
+      name: node.tags?.name || `OSM ${node.tags?.amenity || 'Amenity'} ${node.id}`,
+      amenity: node.tags?.amenity || 'amenity',
+      type: node.tags?.amenity || 'point'
+    }
+  }));
+
+  const geojson = {
+    type: 'FeatureCollection' as const,
+    features
+  };
+
+  const rawContent = JSON.stringify(geojson);
+  const datasetName = `OSM Amenities (${features.length} points)`;
+
+  const processed = processDataset(
+    datasetName,
+    rawContent,
+    'geojson',
+    '#27A644'
+  );
+
+  processed.id = `osm-amenities-${Date.now()}`;
   return processed;
 }

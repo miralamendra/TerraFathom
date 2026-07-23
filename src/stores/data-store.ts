@@ -7,6 +7,8 @@ import { useFilterStore } from './filter-store';
 import { useAnimationStore } from './animation-store';
 import { getCompatibleLayers } from '@/core/layers/layer-registry';
 import { getViewportForDataset } from '@/core/map/viewport';
+import { getMapInstance } from '@/core/map/map-instance';
+import { unloadSpaceSyntaxPMTilesLayer } from '@/services/space-syntax-pmtiles';
 
 interface DataState {
   datasets: Record<string, ProcessedDataset>;
@@ -32,41 +34,40 @@ export const useDataStore = create<DataState>((set, get) => ({
     // Auto-select the newly added dataset
     get().selectDataset(dataset.id);
 
-    // Auto-create sensible default visualization layers
-    const nameLower = dataset.name.toLowerCase();
-    const { addLayer } = useLayerStore.getState();
+    // Auto-create sensible default visualization layers if not PMTiles
+    if (!dataset.isPMTiles) {
+      const nameLower = dataset.name.toLowerCase();
+      const { addLayer } = useLayerStore.getState();
 
-    if (nameLower.includes('taxi') || nameLower.includes('movement') || nameLower.includes('transit')) {
-      // Create both scatterplot and geojson layers by default for taxi/movement/transit
-      addLayer(dataset.id, 'scatterplot', `${dataset.name} Points`, {
-        colorMode: 'mapped',
-        colorField: 'total_duration',
-        colorPalette: 'magma',
-        strokeWidth: 0,
-      });
-      const compatibles = getCompatibleLayers(dataset);
-      if (compatibles.some((c) => c.type === 'geojson')) {
-        addLayer(dataset.id, 'geojson', `${dataset.name} Polygons`, {
+      if (nameLower.includes('taxi') || nameLower.includes('movement') || nameLower.includes('transit')) {
+        addLayer(dataset.id, 'scatterplot', `${dataset.name} Points`, {
           colorMode: 'mapped',
           colorField: 'total_duration',
           colorPalette: 'magma',
           strokeWidth: 0,
         });
-      }
-    } else if (nameLower.includes('earthquake')) {
-      // Heatmap density and scatter points with custom defaults
-      addLayer(dataset.id, 'heatmap', `${dataset.name} Density`, {
-        colorPalette: 'redBlue',
-      });
-      addLayer(dataset.id, 'scatterplot', `${dataset.name} Points`, {
-        fillColor: [75, 85, 99], // Cool Gray #4B5563
-      });
-    } else {
-      // General fallbacks
-      const compatibles = getCompatibleLayers(dataset);
-      if (compatibles.length > 0) {
-        const firstType = compatibles[0].type;
-        addLayer(dataset.id, firstType, `${dataset.name} Visual`);
+        const compatibles = getCompatibleLayers(dataset);
+        if (compatibles.some((c) => c.type === 'geojson')) {
+          addLayer(dataset.id, 'geojson', `${dataset.name} Polygons`, {
+            colorMode: 'mapped',
+            colorField: 'total_duration',
+            colorPalette: 'magma',
+            strokeWidth: 0,
+          });
+        }
+      } else if (nameLower.includes('earthquake')) {
+        addLayer(dataset.id, 'heatmap', `${dataset.name} Density`, {
+          colorPalette: 'redBlue',
+        });
+        addLayer(dataset.id, 'scatterplot', `${dataset.name} Points`, {
+          fillColor: [75, 85, 99],
+        });
+      } else {
+        const compatibles = getCompatibleLayers(dataset);
+        if (compatibles.length > 0) {
+          const firstType = compatibles[0].type;
+          addLayer(dataset.id, firstType, `${dataset.name} Visual`);
+        }
       }
     }
   },
@@ -75,6 +76,11 @@ export const useDataStore = create<DataState>((set, get) => ({
     // Cascade delete of layers and filters linked to this dataset
     useLayerStore.getState().removeLayersForDataset(id);
     useFilterStore.getState().removeFiltersForDataset(id);
+
+    const map = getMapInstance();
+    if (map && id.includes('space-syntax')) {
+      unloadSpaceSyntaxPMTilesLayer(map);
+    }
 
     set((state) => {
       const nextDatasets = { ...state.datasets };
@@ -105,7 +111,6 @@ export const useDataStore = create<DataState>((set, get) => ({
       if (dataset) {
         const newVp = getViewportForDataset(dataset);
         const drawerOpen = useUIStore.getState().bottomDrawerOpen;
-        // Shift map camera further south to push visual elements higher up (north) out of bottom drawer's way
         const latOffset = drawerOpen ? (42 / Math.pow(2, newVp.zoom)) : 0;
 
         useMapStore.getState().animateViewport({

@@ -20,11 +20,12 @@ export interface ProcessedDataset {
   id: string;
   name: string;
   color: string; // Custom dataset badge color indicator
-  format: 'csv' | 'geojson';
+  format: 'csv' | 'geojson' | 'shp';
   fields: FieldStats[];
   records: DatasetRecord[];
   latField?: string;
   lngField?: string;
   bounds: [number, number, number, number] | null; // [minLng, minLat, maxLng, maxLat]
   rowCount: number;
+  isPMTiles?: boolean;
 }

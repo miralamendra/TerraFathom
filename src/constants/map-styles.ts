@@ -28,9 +28,9 @@ export const MAP_STYLES: MapStyleOption[] = [
 ];
 
 export const DEFAULT_VIEWPORT = {
-  latitude: 40.73061, // NYC coordinates
-  longitude: -73.935242,
-  zoom: 11,
+  latitude: 6.927079, // Colombo coordinates
+  longitude: 79.861244,
+  zoom: 12,
   pitch: 0,
   bearing: 0,
 };
