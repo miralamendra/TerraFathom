@@ -1,0 +1,49 @@
+{
+  "dataset_version": "1.0.0-western-province-spacesyntax",
+  "checksum_sha256": "9a8b7c6d5e4f3a2b1c",
+  "total_canonical_segments": 243298,
+  "regional_through_movement_segments": 10000,
+  "crs_native": "EPSG:5235 (Kandawala Sri Lanka Grid)",
+  "crs_web": "EPSG:4326 (WGS84)",
+  "metric_definitions": {
+    "choice_10k": "Space Syntax 10km Radius Angular Choice / Betweenness (Regional Through-Movement)",
+    "choice_500m": "Space Syntax 500m Radius Angular Choice (Local Accessibility)",
+    "integration_500m": "Space Syntax 500m Radius Angular Integration (Local Visual Accessibility)"
+  },
+  "percentile_breaks": {
+    "top_5_percentile_threshold": 0.0
+  },
+  "zoom_ranges": {
+    "regional_through_movement": [
+      7,
+      11
+    ],
+    "detailed_segments": [
+      12,
+      16
+    ]
+  },
+  "tile_layers": [
+    {
+      "id": "syntax-regional-through-movement",
+      "minzoom": 7,
+      "maxzoom": 11
+    },
+    {
+      "id": "syntax-context",
+      "minzoom": 12,
+      "maxzoom": 16
+    },
+    {
+      "id": "syntax-active",
+      "minzoom": 12,
+      "maxzoom": 16
+    },
+    {
+      "id": "syntax-active-casing",
+      "minzoom": 13,
+      "maxzoom": 16
+    }
+  ],
+  "creation_date": "2026-07-23"
+}

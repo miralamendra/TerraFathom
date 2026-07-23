@@ -193,17 +193,11 @@ export function loadSpaceSyntaxPMTilesLayer(
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const cleanBase = base.endsWith('/') ? base : `${base}/`;
     
-    // High-definition vector source with 100% reliable local & static display
-    const dataUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
+    const geojsonUrl = (metric.includes('10000') || metric.includes('10k') || metric.includes('BtA10000'))
       ? `${origin}${cleanBase}data/10km.geojson`
       : `${origin}${cleanBase}data/500.geojson`;
 
-    map.addSource(sourceId, {
-      type: 'geojson',
-      data: dataUrl,
-      tolerance: 0.2, // Ultra-fast optimized vector rendering
-      buffer: 64,
-    });
+    const pmtilesUrl = `pmtiles://${origin}${cleanBase}data/space-syntax.pmtiles`;
 
     const colorField = configOverrides?.colorField || metric;
     const colorPalette = configOverrides?.colorPalette || 'space-syntax';
@@ -213,31 +207,61 @@ export function loadSpaceSyntaxPMTilesLayer(
     const strokeWidth = configOverrides?.strokeWidth ?? 1.0;
     const opacity = configOverrides?.opacity ?? 1.0;
 
-    map.addLayer({
-      id: layerId,
-      type: 'line',
-      source: sourceId,
-      layout: {
-        'line-cap': 'butt',
-        'line-join': 'miter',
-        'line-miter-limit': 3,
-        visibility: 'visible',
-      },
-      paint: {
-        'line-width': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          9, Math.max(0.75, strokeWidth * 0.75),
-          12, Math.max(1.25, strokeWidth * 1.25),
-          15, Math.max(2.5, strokeWidth * 2.5),
-          18, Math.max(4.5, strokeWidth * 4.5)
-        ],
-        'line-color': colorRamp as any,
-        'line-opacity': opacity,
-        'line-blur': 0,
-      },
-    });
+    const addLayerWithSource = (usePMTiles: boolean) => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+
+      if (usePMTiles) {
+        map.addSource(sourceId, {
+          type: 'vector',
+          url: pmtilesUrl,
+        });
+      } else {
+        map.addSource(sourceId, {
+          type: 'geojson',
+          data: geojsonUrl,
+          tolerance: 0.2,
+          buffer: 64,
+        });
+      }
+
+      const layerSpec: maplibregl.LayerSpecification = {
+        id: layerId,
+        type: 'line',
+        source: sourceId,
+        ...(usePMTiles ? { 'source-layer': 'space_syntax' } : {}),
+        layout: {
+          'line-cap': 'butt',
+          'line-join': 'miter',
+          'line-miter-limit': 3,
+          visibility: 'visible',
+        },
+        paint: {
+          'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            9, Math.max(0.75, strokeWidth * 0.75),
+            12, Math.max(1.25, strokeWidth * 1.25),
+            15, Math.max(2.5, strokeWidth * 2.5),
+            18, Math.max(4.5, strokeWidth * 4.5)
+          ],
+          'line-color': colorRamp as any,
+          'line-opacity': opacity,
+          'line-blur': 0,
+        },
+      };
+
+      map.addLayer(layerSpec);
+    };
+
+    fetch(geojsonUrl, { method: 'HEAD' })
+      .then((res) => {
+        addLayerWithSource(!res.ok);
+      })
+      .catch(() => {
+        addLayerWithSource(true);
+      });
   };
 
   if (map.isStyleLoaded()) {

@@ -45,4 +45,10 @@ server/storage/jobs/
 public/data/*.geojson
 public/data/*.zip
 public/pmtiles/*.geojson
+
+# Allow lightweight Space Syntax PMTiles & JSON manifests
+!public/data/space-syntax.pmtiles
 !public/data/space-syntax-sample.json
+!public/data/space-syntax-manifest.json
+!public/data/space-syntax-validation.json
+!public/data/space-syntax-crs-validation.json

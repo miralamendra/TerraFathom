@@ -1,0 +1,16 @@
+{
+  "status": "PASSED",
+  "source_crs": "PROJCS[\"Kandawala_Sri_Lanka_Grid\",GEOGCS[\"GCS_Kandawala\",DATUM[\"D_Kandawala\",SPHEROID[\"Everest_Adjustment_1937\",6377276.345,300.8017]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",200000.0],PARAMETER[\"False_Northing\",200000.0],PARAMETER[\"Central_Meridian\",80.7717111111111],PARAMETER[\"Scale_Factor\",0.9999238418],PARAMETER[\"Latitude_Of_Origin\",7.00048027777778],UNIT[\"Meter\",1.0]]",
+  "dest_crs": "EPSG:4326",
+  "feature_count_verified": 243298,
+  "wgs84_bounds": [
+    79.8175395319609,
+    6.324534187444433,
+    80.35638903041676,
+    7.330158858434523
+  ],
+  "max_roundtrip_error_meters": 0.0035576408108322095,
+  "mean_segment_length_meters": 85.34313512713089,
+  "total_network_length_km": 20763.81409016069,
+  "proj_version": "9.5.1"
+}
